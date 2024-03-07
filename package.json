@@ -61,7 +61,7 @@
   },
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
-    "build": "react-scripts --openssl-legacy-provider build",
+    "build": "vercel --build-env LEGACY_PEER_DEPS=true",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
