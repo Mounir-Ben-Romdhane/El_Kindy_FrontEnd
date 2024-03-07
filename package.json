@@ -62,7 +62,7 @@
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
     "build": "react-scripts --openssl-legacy-provider build",
-    "install": "npm install --legacy-peer-deps",
+    "install": "react-scripts install --legacy-peer-deps",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
