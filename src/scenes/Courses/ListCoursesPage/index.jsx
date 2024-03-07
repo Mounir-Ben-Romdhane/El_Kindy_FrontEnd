@@ -241,7 +241,7 @@ function Index() {
                               {/* Affichage de l'image */}
                               {course.picturePath ? (
                                 <img
-                                  src={`http://localhost:3001/assets/${course.picturePath}`}
+                                  src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                                   alt="Course"
                                   style={{
                                     width: "100px",
