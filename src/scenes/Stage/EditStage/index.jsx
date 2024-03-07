@@ -28,7 +28,7 @@ function EditStage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/stage/${id}`, {
+        const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +106,7 @@ function EditStage() {
     console.log("picture name", values.picture.name);
 
     const savedStageResponse = await fetch(
-      `http://localhost:3001/api/stage/${id}`,
+      `https://el-kindy-project-backend.onrender.com/api/stage/${id}`,
       {
         method: "PATCH",
         headers: {

@@ -13,7 +13,7 @@ function Index() {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const response = await fetch("http://localhost:3001/stage");
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/stage");
         const { stages } = await response.json();
         setStages(stages);
       } catch (error) {

@@ -28,7 +28,7 @@ function Index() {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/course/getAllByCategories"
+        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);
@@ -78,7 +78,7 @@ function Index() {
 
   const test = async () => {
     try {
-      const response = await fetch("http://localhost:3001/auth/getAll", {
+      const response = await fetch("https://el-kindy-project-backend.onrender.com/auth/getAll", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

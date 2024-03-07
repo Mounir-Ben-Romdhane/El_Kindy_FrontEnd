@@ -15,7 +15,7 @@ function Index() {
     // Fonction pour récupérer les catégories
     const fetchClasses = async () => {
       try {
-        const response = await fetch("http://localhost:3001/salle", {
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/salle", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function Index() {
   }, []);
   const fetchClasses = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/salle");
+      const response = await axios.get("https://el-kindy-project-backend.onrender.com/salle");
       setClasses(response.data);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -65,7 +65,7 @@ function Index() {
 
   const deleteClasses = async (classeId) => {
     try {
-      await axios.delete(`http://localhost:3001/salle/${classeId}`);
+      await axios.delete(`https://el-kindy-project-backend.onrender.com/salle/${classeId}`);
       fetchClasses(); // Re-fetch categories to update the list after deletion
       MySwal.fire(
         'Supprimé!',

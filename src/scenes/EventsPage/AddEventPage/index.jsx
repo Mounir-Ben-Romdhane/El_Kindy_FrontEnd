@@ -53,7 +53,7 @@ const addEvent = async (values, onSubmitProps) => {
   console.log("picture name", values.picture.name);
   
   const savedEventResponse = await fetch(
-      "http://localhost:3001/event/add",
+      "https://el-kindy-project-backend.onrender.com/event/add",
       {
           method: "POST",
           body: formData,

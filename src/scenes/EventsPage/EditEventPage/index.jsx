@@ -26,7 +26,7 @@ function EditEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/event/event/create', formData);
+      await axios.post('https://el-kindy-project-backend.onrender.com/event/event/create', formData);
       alert('Event added successfully');
       navigate('/listEvents');
     } catch (error) {

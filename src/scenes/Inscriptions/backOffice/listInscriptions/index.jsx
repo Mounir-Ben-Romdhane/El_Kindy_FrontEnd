@@ -14,7 +14,7 @@ function Index() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("http://localhost:3001/inscription/all", {
+      const response = await fetch("https://el-kindy-project-backend.onrender.com/inscription/all", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +40,7 @@ function Index() {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:3001/inscription/delete/${id}`, {
+      await fetch(`https://el-kindy-project-backend.onrender.com/inscription/delete/${id}`, {
         method: "DELETE",
       });
 

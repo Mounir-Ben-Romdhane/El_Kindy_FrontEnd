@@ -38,7 +38,7 @@ function Index() {
   }, []);*/
   const fetchCategories = async () => {
     try {
-      const response = await axiosPrivate.get("http://localhost:3001/api/categories");
+      const response = await axiosPrivate.get("https://el-kindy-project-backend.onrender.com/api/categories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -68,7 +68,7 @@ function Index() {
 
   const deleteCategory = async (categoryId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/categories/${categoryId}`);
+      await axios.delete(`https://el-kindy-project-backend.onrender.com/api/categories/${categoryId}`);
       fetchCategories(); // Re-fetch categories to update the list after deletion
       MySwal.fire(
         'Supprimé!',

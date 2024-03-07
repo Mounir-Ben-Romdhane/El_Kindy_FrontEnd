@@ -27,7 +27,7 @@ function Index() {
     const approveInscription = async (id) => {
       try {
         const response = await axios.patch(
-          `http://localhost:3001/inscription/${id}/approve`
+          `https://el-kindy-project-backend.onrender.com/inscription/${id}/approve`
         );
         navigate('/inscriptionsList')
       } catch (error) {
@@ -38,7 +38,7 @@ function Index() {
     const rejectInscription = async (id) => {
       try {
         const response = await axios.patch(
-          `http://localhost:3001/inscription/${id}/reject`
+          `https://el-kindy-project-backend.onrender.com/inscription/${id}/reject`
         );
         navigate('/inscriptionsList')
       } catch (error) {
