@@ -165,9 +165,7 @@ const MyCalendar = () => {
   };
 
   return (
-    <div>
-      <main>
-        <NavBar />
+    <>
         <TopBarTeacherStudent />
         <section className="pt-0">
           <div className="container">
@@ -233,9 +231,7 @@ const MyCalendar = () => {
             </div>
           </div>
         </section>
-        <Footer />
-      </main>
-    </div>
+    </>
   );
 };
 

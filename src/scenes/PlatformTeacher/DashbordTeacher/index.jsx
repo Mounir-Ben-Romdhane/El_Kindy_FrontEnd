@@ -10,7 +10,7 @@ function Index() {
   
 
     return (
-        <div>
+        <>
             {/* **************** MAIN CONTENT START **************** */}
             <main>
                 {/* hedha l partie l fou9aneya  */}
@@ -33,7 +33,7 @@ Page content END */}
             </main>
             {/* **************** MAIN CONTENT END **************** */}
 
-        </div>
+        </>
     )
 }
 
