@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import BannerStart from 'components/BannerStart';
-import kendy from "../../../../src/assetss/images/kendy.png";
 import Navbar  from "components/NavBar";
 import Footer from "components/Footer";
 import '../../Style.css';
@@ -232,7 +231,7 @@ Video divider START */}
           </div>
           <div className="col-lg-5 position-relative mt-4 mt-lg-0">
             {/* Image */}
-            <img src={kendy} className="border border-5 border-white rounded-2" alt />
+            
             <div className="position-absolute top-50 start-50 translate-middle">
               {/* Video link */}
               <a href="https://www.facebook.com/watch/?v=1108461359291863" className="btn text-danger btn-round btn-white-shadow btn-lg mb-0" data-glightbox data-gallery="video-tour">
