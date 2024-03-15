@@ -11,7 +11,7 @@ const FacebookLogin = () => {
   const login = async (values) => {
     try {
       console.log("Logging in...", values);
-      const loggedInResponse = await fetch("http://localhost:3001/auth/facebooklogin", {
+      const loggedInResponse = await fetch("https://el-kindy-project-backend.onrender.com/auth/facebooklogin", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       body: JSON.stringify(values),
