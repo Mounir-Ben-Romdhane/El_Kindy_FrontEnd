@@ -43,7 +43,7 @@ function Index() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://el-kindy-project-backend.onrender.com/api/categories', {
+        const response = await fetch('http://localhost:3001/api/categories', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

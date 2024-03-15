@@ -15,7 +15,7 @@ function Index() {
     // Fonction pour récupérer les catégories
     const fetchClasses = async () => {
       try {
-        const response = await fetch("https://el-kindy-project-backend.onrender.com/salle", {
+        const response = await fetch("http://localhost:3001/salle", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function Index() {
   }, []);
   const fetchClasses = async () => {
     try {
-      const response = await axios.get("https://el-kindy-project-backend.onrender.com/salle");
+      const response = await axios.get("http://localhost:3001/salle");
       setClasses(response.data);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -65,7 +65,7 @@ function Index() {
 
   const deleteClasses = async (classeId) => {
     try {
-      await axios.delete(`https://el-kindy-project-backend.onrender.com/salle/${classeId}`);
+      await axios.delete(`http://localhost:3001/salle/${classeId}`);
       fetchClasses(); // Re-fetch categories to update the list after deletion
       MySwal.fire(
         'Supprimé!',
@@ -185,10 +185,10 @@ const handleSort = () => {
 
       
       <td>
-        <Link to={`/edit-classe/${clas._id}`} className="btn btn-sm btn-dark me-1 mb-1 mb-md-0">
-          Edit
+        <Link to={`/edit-classe/${clas._id}`} className="btn btn-success-soft btn-round me-1 mb-1 mb-md-0">
+            <i class="bi bi-pencil-square"></i>
         </Link>
-        <button onClick={() => handleDeleteClasses(clas._id)} className="btn btn-sm btn-danger me-1 mb-1 mb-md-0">Delete</button>
+        <button onClick={() => handleDeleteClasses(clas._id)} className="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0"><i class="bi bi-trash"></i></button>
       </td>
     </tr>
   ))}

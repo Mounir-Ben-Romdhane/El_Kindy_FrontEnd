@@ -21,7 +21,7 @@ function ClassesForm() {
     const fetchClasseData = async () => {
       try {
         const response = await axios.get(
-          `https://el-kindy-project-backend.onrender.com/salle/${id}`
+          `http://localhost:3001/salle/${id}`
         );
         setFormState({
           name: response.data.name,
@@ -52,7 +52,7 @@ function ClassesForm() {
     event.preventDefault();
   
     try {
-      await axios.put(`https://el-kindy-project-backend.onrender.com/salle/${id}`, formState, {
+      await axios.put(`http://localhost:3001/salle/${id}`, formState, {
         headers: {
           "Content-Type": "application/json",
         },

@@ -1,10 +1,10 @@
 import axios from 'axios'
+import { axiosPrivate } from "../api/axios";
 
 
-const API = axios.create({ baseURL: 'http://localhost:3001' });
 
-//export const createChat = (data) => API.post('/chat/', data);
+export const createChat = (data) => axiosPrivate.post('/chat', data);
 
-export const userChats = (id) => API.get(`/chat/${id}`);
+export const userChats = (id) => axiosPrivate.get(`/chat/${id}`);
 
-//export const findChat = (firstId, secondId) => API.get(`/chat/find/${firstId}/${secondId}`);
+export const findChat = (firstId, secondId) => axios.get(`/chat/find/${firstId}/${secondId}`);

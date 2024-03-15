@@ -2,22 +2,27 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { getUser } from "../../api/UserRequests";
-const Conversation = ({ data, currentUser, online }) => {
+import BigChatBox from "../../components/BigChatBox/BigChatBox";
+
+import useAxiosPrivate from "hooks/useAxiosPrivate";
+
+const Conversation = ({ props,data, currentUser, online }) => {
 
   const [userData, setUserData] = useState(null)
   const dispatch = useDispatch()
-
+  const axiosPrivate = useAxiosPrivate();
+  const [currentChat, setCurrentChat] = useState(null);
+  const [reciiiiver, setreciiiiver] = useState(null);
   useEffect(() => {
 
-    const userId = data.members.find((id) => id !== currentUser)
-    console.log(userId);
-
-
+    const reciiiiver = data.members.find((id) => id !== currentUser)
+  //  console.log(reciiiiver);
 
     const getUserData = async () => {
       try {
-        const { data } = await getUser(userId)
+        const { data } = await axiosPrivate.get(`/auth/${reciiiiver}`);
         setUserData(data)
+        
         dispatch({ type: "SAVE_USER", data: data })
       }
       catch (error) {
@@ -27,6 +32,15 @@ const Conversation = ({ data, currentUser, online }) => {
 
     getUserData();
   }, [])
+  console.log("reciiiiver",reciiiiver);
+/*
+<BigChatBox
+  chat={currentChat}
+  currentUser={reciiiiver} 
+  userData={userData}
+/>
+*/ 
+
   return (
     <>
       <div className="follower conversation">
@@ -38,8 +52,6 @@ const Conversation = ({ data, currentUser, online }) => {
             className="followerImage"
             style={{ width: "50px", height: "50px", borderRadius: "50%" }}
           />
-
-
 
           <div className="name" style={{ fontSize: '0.8rem' }}>
             <span>{userData?.firstName} {userData?.lastName}</span>

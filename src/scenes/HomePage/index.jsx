@@ -1,12 +1,11 @@
 import Footer from "components/Footer";
 import NavBar from "components/NavBar";
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { useSelector } from "react-redux";
 import { loadScripts } from "../../scriptLoader";
 import axios from "axios";
-import useAuth from "hooks/useAuth";
 
 
 function Index() {
@@ -14,7 +13,7 @@ function Index() {
   const scriptsLoaded = useRef(false);
   const [coursesByCategories, setCoursesByCategories] = useState([]);
   
-
+//
   const [currentImage, setCurrentImage] = useState(0);
   const [nextImage, setNextImage] = useState(1);
   const images = [
@@ -28,7 +27,7 @@ function Index() {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
+        "http://localhost:3001/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);
@@ -40,6 +39,7 @@ function Index() {
     window.scrollTo(0, 0); // Scroll to the top when component mounts
     //Get all category
     fetchCoursesByCategories();
+    console.log("user",user);
 
     const scripts = [
       "/assets/vendor/purecounterjs/dist/purecounter_vanilla.js",
@@ -64,10 +64,10 @@ function Index() {
     const interval = setInterval(() => {
       setNextImage((prevImage) => (prevImage + 1) % images.length);
     }, 5000); // Change image every 5 seconds
-
+    
     return () => clearInterval(interval);
   }, []);
-
+//test
   useEffect(() => {
     const transitionTimer = setTimeout(() => {
       setCurrentImage(nextImage);
@@ -76,24 +76,7 @@ function Index() {
     return () => clearTimeout(transitionTimer);
   }, [nextImage]);
 
-  const test = async () => {
-    try {
-      const response = await fetch("https://el-kindy-project-backend.onrender.com/auth/getAll", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const allUsers = await response.json();
-
-      if (allUsers) {
-        //console.log("users", allUsers.users);
-      }
-    } catch (error) {
-      console.error("Error registering user:", error);
-    }
-  };
-  //test();
+  
 
   return (
     <>
@@ -626,7 +609,7 @@ Main Banner END */}
                         <div className="card shadow h-100">
                           {/* Image */}
                           <img
-                            src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
+                            src={`http://localhost:3001/assets/${course.picturePath}`}
                             className="card-img-top"
                             alt="course image"
                             style={{ height: "230px" }} // Set fixed dimensions here
@@ -683,20 +666,7 @@ Main Banner END */}
                             </p>
                             {/* You can render other course details here */}
                           </div>
-                          {/* Card footer */}
-                          <div className="card-footer pt-0 pb-3">
-                            <hr />
-                            <div className="d-flex justify-content-between">
-                              <span className="h6 fw-light mb-0">
-                                <i className="far fa-clock text-danger me-2" />
-                                {course.courseTime} hours
-                              </span>
-                              <span className="h6 fw-light mb-0">
-                                <i className="fas fa-table text-orange me-2" />
-                                {course.coursePrice} DT
-                              </span>
-                            </div>
-                          </div>
+                          
                         </div>
                       </div>
                     ))}
@@ -706,6 +676,11 @@ Main Banner END */}
               ))}
             </div>
             {/* Tabs content END */}
+        {/* Button */}
+<div className="text-center mt-5">
+  <a href="#" className="btn btn-primary-soft">View more<i className="fas fa-sync ms-2" /></a>
+</div>
+
           </div>
         </section>
         {/* =======================

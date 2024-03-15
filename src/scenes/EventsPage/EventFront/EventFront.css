@@ -1,0 +1,76 @@
+/* Existing .cardd styles */
+.cardd {
+    position: relative;
+    overflow: hidden; /* Hide the overflowing content */
+    transition: transform 0.3s ease; /* Add transition for transform */
+    border-radius: 8px; /* Add border radius for rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add initial box shadow */
+  }
+  
+  .cardd:hover {
+    transform: scale(1.05); /* Increase size on hover */
+    box-shadow: 0 8px 16px rgba(154, 39, 39, 0.2); /* Add shadow-like border on hover */
+  }
+  
+  .cardd:hover img {
+    transform: scale(1.0);
+  }
+  
+  .cardd .cardd-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(236, 231, 225, 0.25), rgba(18, 91, 193, 0.93));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 0 4rem;
+    transform: translateY(100%);
+    transition: .5s ease;
+  }
+  
+  .cardd:hover .cardd-layer {
+    transform: translateY(0);
+  }
+  
+  /* Additional styles for title, date, and price */
+  .event-card .card-title h5 {
+    margin: 0;
+    padding: 10px 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+  
+  .event-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .event-details .event-price {
+    font-weight: bold;
+    color: #0056b3;
+  }
+  
+  .view-more-btn button {
+    margin-top: 10px;
+  }
+  
+  /* Adjust hover effect color and visibility */
+  .cardd:hover .card-title h5 {
+    color: #007bff; /* Change the text color on hover */
+  }
+  
+  .cardd:hover .event-details p,
+  .cardd:hover .event-details .event-price {
+    background-color: #007bff; /* Background color for emphasis */
+    color: #ffffff; /* Text color change for better visibility */
+    padding: 0.25em 0.5em; /* Add some padding for a badge-like appearance */
+    border-radius: 0.25em; /* Round corners for a smoother look */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for color and bg changes */
+  }
+  

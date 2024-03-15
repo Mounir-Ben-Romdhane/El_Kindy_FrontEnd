@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ChatBox from "../../components/ChatBox/ChatBox";
 import Conversation from "../../components/Coversation/Conversation";
 import LogoSearch from "../../components/LogoSearch/LogoSearch";
+import BigChatBox from "../../components/BigChatBox/BigChatBox";
 import NavIcons from "../../components/NavIcons/NavIcons";
 import "./Chat.css";
 import { userChats } from "../../api/ChatRequests";
@@ -21,7 +22,7 @@ const Chat = () => {
   const [sendMessage, setSendMessage] = useState(null);
   const [receivedMessage, setReceivedMessage] = useState(null);
   const [filteredChats, setFilteredChats] = useState([]);
-
+  const [thereciver, setreciiiiver] = useState(null);
   // Get the chat in chat section
   useEffect(() => {
     const getChats = async () => {
@@ -106,11 +107,12 @@ const Chat = () => {
         {/* Right Side */}
         <div className="Right-side-chat "style={{ marginRight: "10px" }}>
           <div style={{ width: "20rem", alignSelf: "flex-end" }}></div>
-          <ChatBox
+          <BigChatBox
             chat={currentChat}
             currentUser={userId}
             setSendMessage={setSendMessage}
             receivedMessage={receivedMessage}
+            thereciver={thereciver}
           />
         </div>
       </div>

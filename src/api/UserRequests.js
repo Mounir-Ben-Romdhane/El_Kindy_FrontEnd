@@ -1,13 +1,6 @@
-import axios from "axios";
+import { axiosPrivate } from "../api/axios";
 
-const API = axios.create({ baseURL: "http://localhost:3001" });
+import axios from 'axios'
 
-/*API.interceptors.request.use((req) => {
-    if (localStorage.getItem('profile')) {
-      req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem('profile')).token}`;
-    }
-  
-    return req;
-  });*/
 
-export const getUser = (userId) => API.get(`/auth/${userId}`);
+export const getUser = (userId) => axiosPrivate.get(`/auth/${userId}`);

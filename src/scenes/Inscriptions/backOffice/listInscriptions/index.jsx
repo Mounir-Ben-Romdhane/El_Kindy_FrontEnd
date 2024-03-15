@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
+import { Link } from "react-router-dom"; // Assurez-vous d'importer Link depuis react-router-dom
 import withReactContent from "sweetalert2-react-content";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Importez les styles CSS
 import SideBar from "components/SideBar";
 import TopBarBack from "components/TopBarBack";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2"; // Importez SweetAlert2
-const MySwal = withReactContent(Swal);
 
 function Index() {
   const [inscription, setInscription] = useState([]);
 
   const fetchData = async () => {
     try {
-      const response = await fetch("https://el-kindy-project-backend.onrender.com/inscription/all", {
+      const response = await fetch("http://localhost:3001/inscription/all", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +39,7 @@ function Index() {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`https://el-kindy-project-backend.onrender.com/inscription/delete/${id}`, {
+      await fetch(`http://localhost:3001/inscription/delete/${id}`, {
         method: "DELETE",
       });
 
@@ -190,18 +189,20 @@ function Index() {
                             <td>
                               <Link
                                 to={`/inscriptionDetails/${inscription._id}`}
-                                className="btn btn-sm btn-info-soft mb-0 me-1 mb-md-0"
-                              
+                                className="btn btn-info-soft btn-round mb-1 me-1 mb-md-0"
                               >
-                               Details
+                                <i class="bi bi-eye"></i>
                               </Link>
-                              
 
                               <button
+                                class="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title=""
+                                data-bs-original-title="Delete"
                                 onClick={() => handleDelete(inscription._id)}
-                                className="btn btn-sm btn-danger-soft me-1 mb-1 mb-md-0"
                               >
-                                Delete
+                                <i class="bi bi-trash"></i>
                               </button>
                             </td>
                           </tr>

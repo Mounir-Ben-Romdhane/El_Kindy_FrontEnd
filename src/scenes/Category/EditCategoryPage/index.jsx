@@ -22,7 +22,7 @@ function CategoryForm() {
     const fetchCategoryData = async () => {
       try {
         const response = await axios.get(
-          `https://el-kindy-project-backend.onrender.com/api/categories/${id}`
+          `http://localhost:3001/api/categories/${id}`
         );
         setFormState({
           name: response.data.name,
@@ -71,7 +71,7 @@ function CategoryForm() {
     }
   
     try {
-      await axios.put(`https://el-kindy-project-backend.onrender.com/api/categories/${id}`, formData, {
+      await axios.put(`http://localhost:3001/api/categories/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the Content-Type header
         },

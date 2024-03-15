@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { setLogout } from '../state';
 import { jwtDecode } from "jwt-decode";
@@ -13,6 +13,21 @@ function TopBarBack() {
 
   const accessToken = useSelector((state) => state.accessToken);
   const user = accessToken ? jwtDecode(accessToken) : "";
+
+  const getAvatarSrc = () => {
+    
+    if (user && user.picturePath !== "" && !user.authSource === "local") {
+      // If user has a custom picture path
+      return `http://localhost:3001/assets/${user.picturePath}`;
+    } else if (user && user.authSource === "local" && user.gender !== "") {
+
+      // If user has no custom picture but has a gender
+      return user.gender === 'male' ? '/assets/images/element/01.jpg' : '/assets/images/element/02.jpg';
+    } else {
+      // Default avatar if no picture path or gender is available
+      return user.picturePath;
+    }
+  };
 
   const logoutHandler = () => {
     dispatch(
@@ -276,7 +291,7 @@ function TopBarBack() {
                       >
                         <img
                           className="avatar-img rounded-circle"
-                          src={user?.picturePath}
+                          src={getAvatarSrc()}
                           alt="avatar"
                         />
                       </a>
@@ -292,7 +307,7 @@ function TopBarBack() {
                             <div className="avatar me-3">
                               <img
                                 className="avatar-img rounded-circle shadow"
-                                src={user?.picturePath}
+                                src={getAvatarSrc()}
                                 alt="avatar"
                               />
                             </div>

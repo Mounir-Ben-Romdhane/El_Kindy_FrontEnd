@@ -1,8 +1,7 @@
-import axios from 'axios'
+import { axiosPrivate } from "../api/axios";
 
 
-const API = axios.create({ baseURL: 'http://localhost:3001' });
 
-export const getMessages = (id) => API.get(`/message/${id}`);
+export const getMessages = (id) => axiosPrivate.get(`/message/${id}`);
 
-export const addMessage = (data) => API.post('/addMessage/', data);
+export const addMessage = (data) => axiosPrivate.post('/addMessage/', data);

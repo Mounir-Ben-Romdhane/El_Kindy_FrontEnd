@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import NavBar from 'components/NavBar';
 import Footer from 'components/Footer';
 import SideBarTeacher from 'components/SideBarTeacher';
@@ -20,7 +20,6 @@ const HomePagee = () => {
       {/* **************** MAIN CONTENT START **************** */}
       <main>
 
-        <NavBar />
         {/* hedha l partie l fou9aneya  */}
         <TopBarTeacherStudent />
 
@@ -31,25 +30,26 @@ const HomePagee = () => {
             <div className="row">
               <SideBarTeacher />
               <div className="col-xl-9">
+              <div className="d-flex justify-content-end align-items-end">
+                  <button className="btn btn-orange-soft mb-0"><Link to="/listMeeting"><i className="fas fa-sign-in-alt me-2" />List Meeting</Link></button>
+                </div>
+                <br></br>
                 {/* Student review START */}
                 <div className="card border bg-transparent rounded-3">
-
                   {/* Reviews START */}
-                  <div className="card-body mt-2 mt-sm-4">
-                    {/* Review item START */}
-                    <div className="d-sm-flex">
-
-                      <div>
-                        <div className="mb-3 d-sm-flex justify-content-sm-between align-items-center">
-                          {/* Title */}
-                          <div>
-                            <h5 className="m-0">Making a meeting</h5>
-
+                  <div className="card-body mt-2 mt-sm-4 d-flex justify-content-center align-items-center ">
+                    {/* Category item */}
+                    <div className="col-sm-9 ">
+                      <div className="card card-body shadow h-100 d-flex justify-content-center align-items-center  ">
+                        {/* Title and image */}
+                        <div className="d-flex align-items-center">
+                          <img src="assets/images/element/meeting.png" className="h-60px mb-2" alt />
+                          <div className="ms-3">
+                            <h5 className="mb-0"><a href="#">Create your meeting room successfully!</a></h5>
+                            <p className="mb-0 small">Feel free to explore our features for a rewarding experience</p>
                           </div>
-
                         </div>
-
-                        {/* Button */}
+                        {/* List */}
                         <div className="text-end">
                           {/* collapse textarea */}
                           <div className="collapse show" id="collapseComment">
@@ -62,17 +62,10 @@ const HomePagee = () => {
                         </div>
                       </div>
                     </div>
-                    {/* Divider */}
-                    <hr />
+                    {/* Category item */}
 
-                    {/* Divider */}
-
-                    {/* Review item END */}
                   </div>
-                  {/* Reviews END */}
-
                 </div>
-                {/* Student review END */}
               </div>
             </div>
           </div>
@@ -80,8 +73,6 @@ const HomePagee = () => {
         {/* =======================
     Page content END */}
 
-
-        <Footer />
 
 
 

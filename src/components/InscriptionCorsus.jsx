@@ -8,7 +8,9 @@ import { ToastContainer, toast } from "react-toastify";
 import Backdrop from "@mui/material/Backdrop";
 import CalendarInscription from "./CalendarInscription";
 import BannerStartHome from "./BannerStartHome";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faCheck } from "@fortawesome/free-solid-svg-icons";
+import "../App.css";
 
 function InscriptionCorsus(props) {
   const [coursesByCategories, setCoursesByCategories] = useState([]);
@@ -31,7 +33,8 @@ function InscriptionCorsus(props) {
     niveauEtude: "",
     phoneNumber1: "",
     phoneNumber2: "",
-    likedCourses: [] // New field to hold the list of liked course IDs
+    likedCourses: [], // New field to hold the list of liked course IDs
+    disponibilite: []
   });
 
   const handleToggleFavorite = (courseId) => {
@@ -39,13 +42,13 @@ function InscriptionCorsus(props) {
       // If the course is already liked, remove it from liked courses
       setFormData({
         ...formData,
-        likedCourses: formData.likedCourses.filter(id => id !== courseId)
+        likedCourses: formData.likedCourses.filter((id) => id !== courseId),
       });
     } else {
       // If the course is not liked, add it to liked courses
       setFormData({
         ...formData,
-        likedCourses: [...formData.likedCourses, courseId]
+        likedCourses: [...formData.likedCourses, courseId],
       });
     }
   };
@@ -54,9 +57,6 @@ function InscriptionCorsus(props) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
-  
-  
 
   const toastShowError = (msg) => {
     toast.error(msg, {
@@ -82,11 +82,14 @@ function InscriptionCorsus(props) {
   const addInscription = async (values, onSubmitProps) => {
     setOpen(true);
     try {
-      const loggedInResponse = await fetch("http://localhost:3001/inscription/add", {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify(values),
-      });
+      const loggedInResponse = await fetch(
+        "http://localhost:3001/inscription/add",
+        {
+          method: "POST",
+          headers: { "Content-type": "application/json" },
+          body: JSON.stringify(values),
+        }
+      );
       const loggedIn = await loggedInResponse.json();
       if (loggedInResponse.status === 500) {
         toastShowError("Server error, please try again later.");
@@ -94,7 +97,7 @@ function InscriptionCorsus(props) {
       } else if (loggedInResponse.status === 201) {
         console.log("Inscription sent successfully!!");
         setOpen(false);
-        toastShowSeccus("Inscription sent successfully !!")
+        toastShowSeccus("Inscription sent successfully !!");
       }
     } catch (error) {
       console.error("Error logging in:", error);
@@ -103,9 +106,9 @@ function InscriptionCorsus(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    formData.disponibilite = selectedTimeSlots;
     await addInscription(formData);
-    console.log(formData); // Log form data to console
-    
+    //console.log("formData : ",formData); // Log form data to console
   };
 
   //get all category
@@ -141,6 +144,76 @@ function InscriptionCorsus(props) {
     };
   }, []);
 
+  //table time
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+
+  // Function to handle cell click
+  const handleCellClick = (day, startTime, endTime) => {
+    const timeSlot = { day, startTime, endTime };
+    // Check if the time slot is already selected
+    const isSelected = selectedTimeSlots.some(
+      (slot) =>
+        slot.day === timeSlot.day &&
+        slot.startTime === timeSlot.startTime &&
+        slot.endTime === timeSlot.endTime
+    );
+
+    if (isSelected) {
+      // Deselect the time slot
+      setSelectedTimeSlots((prevSelected) =>
+        prevSelected.filter(
+          (slot) =>
+            !(
+              slot.day === timeSlot.day &&
+              slot.startTime === timeSlot.startTime &&
+              slot.endTime === timeSlot.endTime
+            )
+        )
+      );
+    } else {
+      // Select the time slot
+      setSelectedTimeSlots((prevSelected) => [...prevSelected, timeSlot]);
+    }
+  };
+
+  // Function to handle cell hover
+  const handleCellHover = (day, startTime, endTime) => {
+    if (isMouseDown) {
+      handleCellClick(day, startTime, endTime);
+    }
+  };
+
+  const dayNames = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  const isSelectable = (day, hour, minute) => {
+    if (day === "Saturday" || day === "Sunday") {
+      return true; // Allow selection on Saturday and Sunday
+    }
+
+    const nonSelectableHours = [
+      "10:00",
+      "10:30",
+      "11:00",
+      "11:30",
+      "12:00",
+      "12:30",
+      "13:00",
+      "13:30",
+    ];
+    const currentTime = `${hour}:${minute < 10 ? "0" : ""}${minute}`;
+
+    return !nonSelectableHours.includes(currentTime);
+  };
+
   return (
     <div>
       <ToastContainer />
@@ -152,11 +225,11 @@ function InscriptionCorsus(props) {
       </Backdrop>
       {/* =======================
 Page Banner START */}
-      <BannerStartHome 
+      <BannerStartHome
         title="Pré-Inscription"
         description="Unlock your musical potential with us! Join our Conservatory Project today!"
-        />
-        {/* =======================
+      />
+      {/* =======================
 Page Banner END */}
 
       {/* =======================
@@ -545,8 +618,9 @@ Contact form START */}
                                 data-bs-target="#collapse-2"
                                 aria-expanded="false"
                                 aria-controls="collapse-2"
-                                  >
-                                DESIRED INSTRUMENTS ( Like what you want to learn)
+                              >
+                                DESIRED INSTRUMENTS ( Like what you want to
+                                learn)
                               </button>
                             </h6>
                             {/* Body */}
@@ -564,22 +638,23 @@ Contact form START */}
                                       <>
                                         {/* Title */}
                                         <div className="row mx-5 mb-4 mt-4">
-                                        
                                           <h5 className="mb-0">
                                             <span className="position-relative z-index-1">
-                                            {category.categoryName[0]}
-                                                {/* SVG START */}
-                                                <span className="position-absolute top-50 start-50 translate-middle z-index-n1">
-                                                  <svg width="163.9px" height="48.6px">
-                                                    <path
-                                                      className="fill-warning"
-                                                      d="M162.5,19.9c-0.1-0.4-0.2-0.8-0.3-1.3c-0.1-0.3-0.2-0.5-0.4-0.7c-0.3-0.4-0.7-0.7-1.2-0.9l0.1,0l-0.1,0 c0.1-0.4-0.2-0.5-0.5-0.6c0,0-0.1,0-0.1,0c-0.1-0.1-0.2-0.2-0.3-0.3c0-0.3,0-0.6-0.2-0.7c-0.1-0.1-0.3-0.2-0.6-0.2 c0-0.3-0.1-0.5-0.3-0.6c-0.1-0.1-0.3-0.2-0.5-0.2c-0.1,0-0.1,0-0.2,0c-0.5-0.4-1-0.8-1.4-1.1c0,0,0-0.1,0-0.1c0-0.1-0.1-0.1-0.3-0.2 c-0.9-0.5-1.8-1-2.6-1.5c-6-3.6-13.2-4.3-19.8-6.2c-4.1-1.2-8.4-1.4-12.6-2c-5.6-0.8-11.3-0.6-16.9-1.1c-2.3-0.2-4.6-0.3-6.8-0.3 c-1.2,0-2.4-0.2-3.5-0.1c-2.4,0.4-4.9,0.6-7.4,0.7c-0.8,0-1.7,0.1-2.5,0.1c-0.1,0-0.1,0-0.2,0c-0.1,0-0.1,0-0.2,0 c-0.9,0-1.8,0.1-2.7,0.1c-0.9,0-1.8,0-2.7,0c-5.5-0.3-10.7,0.7-16,1.5c-2.5,0.4-5.1,1-7.6,1.5c-2.8,0.6-5.6,0.7-8.4,1.4 c-4.1,1-8.2,1.9-12.3,2.6c-4,0.7-8,1.6-11.9,2.7c-3.6,1-6.9,2.5-10.1,4.1c-1.9,0.9-3.8,1.7-5.2,3.2c-1.7,1.8-2.8,4-4.2,6 c-1,1.3-0.7,2.5,0.2,3.9c2,3.1,5.5,4.4,9,5.7c1.8,0.7,3.6,1,5.3,1.8c2.3,1.1,4.6,2.3,7.1,3.2c5.2,2,10.6,3.4,16.2,4.4 c3,0.6,6.2,0.9,9.2,1.1c4.8,0.3,9.5,1.1,14.3,0.8c0.3,0.3,0.6,0.3,0.9-0.1c0.7-0.3,1.4,0.1,2.1-0.1c3.7-0.6,7.6-0.3,11.3-0.3 c2.1,0,4.3,0.3,6.4,0.2c4-0.2,8-0.4,11.9-0.8c5.4-0.5,10.9-1,16.2-2.2c0.1,0.2,0.2,0.1,0.2,0c0.5-0.1,1-0.2,1.4-0.3 c0.1,0.1,0.2,0.1,0.3,0c0.5-0.1,1-0.3,1.6-0.3c3.3-0.3,6.7-0.6,10-1c2.1-0.3,4.1-0.8,6.2-1.2c0.2,0.1,0.3,0.1,0.4,0.1 c0.1,0,0.1,0,0.2-0.1c0,0,0.1,0,0.1-0.1c0,0,0-0.1,0.1-0.1c0.2-0.1,0.4-0.1,0.6-0.2c0,0,0.1,0,0.1,0c0.1,0,0.2-0.1,0.3-0.2 c0,0,0,0,0,0l0,0c0,0,0,0,0,0c0.2,0,0.4-0.1,0.5-0.1c0,0,0,0,0,0c0.1,0,0.1,0,0.2,0c0.2,0,0.3-0.1,0.3-0.3c0.5-0.2,0.9-0.4,1.4-0.5 c0.1,0,0.2,0,0.2,0c0,0,0.1,0,0.1,0c0,0,0.1-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0.1,0,0.1,0c0.2,0.1,0.4,0.1,0.6,0 c0.1,0,0.1-0.1,0.2-0.2c0.1-0.1,0.1-0.2,0.1-0.3c0.5-0.2,1-0.4,1.6-0.7c1.5-0.7,3.1-1.4,4.7-1.9c4.8-1.5,9.1-3.4,12.8-6.3 c0.8-0.2,1.2-0.5,1.6-1c0.2-0.3,0.4-0.6,0.5-0.9c0.5-0.1,0.7-0.2,0.9-0.5c0.2-0.2,0.2-0.5,0.3-0.9c0-0.1,0-0.1,0.1-0.1 c0.5,0,0.6-0.3,0.8-0.5C162.3,24,163,22,162.5,19.9z M4.4,28.7c-0.2-0.4-0.3-0.9-0.1-1.2c1.8-2.9,3.4-6,6.8-8 c2.8-1.7,5.9-2.9,8.9-4.2c4.3-1.8,9-2.5,13.6-3.4c0,0.1,0,0.2,0,0.2l0,0c-1.1,0.4-2.2,0.7-3.2,1.1c-3.3,1.1-6.5,2.1-9.7,3.4 c-4.2,1.6-7.6,4.2-10.1,7.5c-0.5,0.7-1,1.3-1.6,2c-2.2,2.7-1,4.7,1.2,6.9c0.1,0.1,0.3,0.3,0.4,0.5C7.8,32.5,5.5,31.2,4.4,28.7z  M158.2,23.8c-1.7,2.8-4.1,5.1-7,6.8c-2,1.2-4.5,2.1-6.9,2.9c-3.3,1-6.4,2.4-9.5,3.7c-3.9,1.6-8.1,2.5-12.4,2.9 c-6,0.5-11.8,1.5-17.6,2.5c-4.8,0.8-9.8,1-14.7,1.5c-5.6,0.6-11.2,0.2-16.8,0.1c-3.1-0.1-6.3,0.3-9.4,0.5c-2.6,0.2-5.2,0.1-7.8-0.1 c-3.9-0.3-7.8-0.5-11.7-0.9c-2.8-0.3-5.5-0.7-8.2-1.4c-3.2-0.8-6.3-1.7-9.5-2.5c-0.5-0.1-1-0.3-1.4-0.5c-0.2-0.1-0.4-0.1-0.6-0.2 c0,0,0.1,0,0.1,0c0.3-0.1,0.5,0,0.7,0.1c0,0,0,0,0,0c3.4,0.5,6.9,1.2,10.3,1.4c0.5,0,1,0,1.5,0c0.5,0,1.3,0.2,1.3-0.3 c0-0.6-0.7-0.9-1.4-0.9c-2.1,0-4.2-0.2-6.3-0.5c-4.6-0.7-9.1-1.5-13.4-3c-2.9-1.1-5.4-2.7-6.9-5.2c-0.5-0.8-0.5-1.6-0.1-2.4 c3.2-6.2,9-9.8,16.3-12.2c6.7-2.2,13.2-4.5,20.2-6c5-1.1,10-1.8,15-2.9c8.5-1.9,17.2-2.4,26-2.7c3.6-0.1,7.1-0.8,10.8-0.6 c8.4,0.7,16.7,1.2,25,2.3c4.5,0.6,9,1.2,13.6,1.7c3.6,0.4,7.1,1.4,10.5,2.8c3.1,1.3,6,2.9,8.5,5C159.1,17.7,159.8,21.1,158.2,23.8z"
-                                                    />
-                                                  </svg>
-                                                </span>
-                                                {/* SVG END */}
+                                              {category.categoryName[0]}
+                                              {/* SVG START */}
+                                              <span className="position-absolute top-50 start-50 translate-middle z-index-n1">
+                                                <svg
+                                                  width="163.9px"
+                                                  height="48.6px"
+                                                >
+                                                  <path
+                                                    className="fill-warning"
+                                                    d="M162.5,19.9c-0.1-0.4-0.2-0.8-0.3-1.3c-0.1-0.3-0.2-0.5-0.4-0.7c-0.3-0.4-0.7-0.7-1.2-0.9l0.1,0l-0.1,0 c0.1-0.4-0.2-0.5-0.5-0.6c0,0-0.1,0-0.1,0c-0.1-0.1-0.2-0.2-0.3-0.3c0-0.3,0-0.6-0.2-0.7c-0.1-0.1-0.3-0.2-0.6-0.2 c0-0.3-0.1-0.5-0.3-0.6c-0.1-0.1-0.3-0.2-0.5-0.2c-0.1,0-0.1,0-0.2,0c-0.5-0.4-1-0.8-1.4-1.1c0,0,0-0.1,0-0.1c0-0.1-0.1-0.1-0.3-0.2 c-0.9-0.5-1.8-1-2.6-1.5c-6-3.6-13.2-4.3-19.8-6.2c-4.1-1.2-8.4-1.4-12.6-2c-5.6-0.8-11.3-0.6-16.9-1.1c-2.3-0.2-4.6-0.3-6.8-0.3 c-1.2,0-2.4-0.2-3.5-0.1c-2.4,0.4-4.9,0.6-7.4,0.7c-0.8,0-1.7,0.1-2.5,0.1c-0.1,0-0.1,0-0.2,0c-0.1,0-0.1,0-0.2,0 c-0.9,0-1.8,0.1-2.7,0.1c-0.9,0-1.8,0-2.7,0c-5.5-0.3-10.7,0.7-16,1.5c-2.5,0.4-5.1,1-7.6,1.5c-2.8,0.6-5.6,0.7-8.4,1.4 c-4.1,1-8.2,1.9-12.3,2.6c-4,0.7-8,1.6-11.9,2.7c-3.6,1-6.9,2.5-10.1,4.1c-1.9,0.9-3.8,1.7-5.2,3.2c-1.7,1.8-2.8,4-4.2,6 c-1,1.3-0.7,2.5,0.2,3.9c2,3.1,5.5,4.4,9,5.7c1.8,0.7,3.6,1,5.3,1.8c2.3,1.1,4.6,2.3,7.1,3.2c5.2,2,10.6,3.4,16.2,4.4 c3,0.6,6.2,0.9,9.2,1.1c4.8,0.3,9.5,1.1,14.3,0.8c0.3,0.3,0.6,0.3,0.9-0.1c0.7-0.3,1.4,0.1,2.1-0.1c3.7-0.6,7.6-0.3,11.3-0.3 c2.1,0,4.3,0.3,6.4,0.2c4-0.2,8-0.4,11.9-0.8c5.4-0.5,10.9-1,16.2-2.2c0.1,0.2,0.2,0.1,0.2,0c0.5-0.1,1-0.2,1.4-0.3 c0.1,0.1,0.2,0.1,0.3,0c0.5-0.1,1-0.3,1.6-0.3c3.3-0.3,6.7-0.6,10-1c2.1-0.3,4.1-0.8,6.2-1.2c0.2,0.1,0.3,0.1,0.4,0.1 c0.1,0,0.1,0,0.2-0.1c0,0,0.1,0,0.1-0.1c0,0,0-0.1,0.1-0.1c0.2-0.1,0.4-0.1,0.6-0.2c0,0,0.1,0,0.1,0c0.1,0,0.2-0.1,0.3-0.2 c0,0,0,0,0,0l0,0c0,0,0,0,0,0c0.2,0,0.4-0.1,0.5-0.1c0,0,0,0,0,0c0.1,0,0.1,0,0.2,0c0.2,0,0.3-0.1,0.3-0.3c0.5-0.2,0.9-0.4,1.4-0.5 c0.1,0,0.2,0,0.2,0c0,0,0.1,0,0.1,0c0,0,0.1-0.1,0.1-0.1c0,0,0,0,0.1,0c0,0,0.1,0,0.1,0c0.2,0.1,0.4,0.1,0.6,0 c0.1,0,0.1-0.1,0.2-0.2c0.1-0.1,0.1-0.2,0.1-0.3c0.5-0.2,1-0.4,1.6-0.7c1.5-0.7,3.1-1.4,4.7-1.9c4.8-1.5,9.1-3.4,12.8-6.3 c0.8-0.2,1.2-0.5,1.6-1c0.2-0.3,0.4-0.6,0.5-0.9c0.5-0.1,0.7-0.2,0.9-0.5c0.2-0.2,0.2-0.5,0.3-0.9c0-0.1,0-0.1,0.1-0.1 c0.5,0,0.6-0.3,0.8-0.5C162.3,24,163,22,162.5,19.9z M4.4,28.7c-0.2-0.4-0.3-0.9-0.1-1.2c1.8-2.9,3.4-6,6.8-8 c2.8-1.7,5.9-2.9,8.9-4.2c4.3-1.8,9-2.5,13.6-3.4c0,0.1,0,0.2,0,0.2l0,0c-1.1,0.4-2.2,0.7-3.2,1.1c-3.3,1.1-6.5,2.1-9.7,3.4 c-4.2,1.6-7.6,4.2-10.1,7.5c-0.5,0.7-1,1.3-1.6,2c-2.2,2.7-1,4.7,1.2,6.9c0.1,0.1,0.3,0.3,0.4,0.5C7.8,32.5,5.5,31.2,4.4,28.7z  M158.2,23.8c-1.7,2.8-4.1,5.1-7,6.8c-2,1.2-4.5,2.1-6.9,2.9c-3.3,1-6.4,2.4-9.5,3.7c-3.9,1.6-8.1,2.5-12.4,2.9 c-6,0.5-11.8,1.5-17.6,2.5c-4.8,0.8-9.8,1-14.7,1.5c-5.6,0.6-11.2,0.2-16.8,0.1c-3.1-0.1-6.3,0.3-9.4,0.5c-2.6,0.2-5.2,0.1-7.8-0.1 c-3.9-0.3-7.8-0.5-11.7-0.9c-2.8-0.3-5.5-0.7-8.2-1.4c-3.2-0.8-6.3-1.7-9.5-2.5c-0.5-0.1-1-0.3-1.4-0.5c-0.2-0.1-0.4-0.1-0.6-0.2 c0,0,0.1,0,0.1,0c0.3-0.1,0.5,0,0.7,0.1c0,0,0,0,0,0c3.4,0.5,6.9,1.2,10.3,1.4c0.5,0,1,0,1.5,0c0.5,0,1.3,0.2,1.3-0.3 c0-0.6-0.7-0.9-1.4-0.9c-2.1,0-4.2-0.2-6.3-0.5c-4.6-0.7-9.1-1.5-13.4-3c-2.9-1.1-5.4-2.7-6.9-5.2c-0.5-0.8-0.5-1.6-0.1-2.4 c3.2-6.2,9-9.8,16.3-12.2c6.7-2.2,13.2-4.5,20.2-6c5-1.1,10-1.8,15-2.9c8.5-1.9,17.2-2.4,26-2.7c3.6-0.1,7.1-0.8,10.8-0.6 c8.4,0.7,16.7,1.2,25,2.3c4.5,0.6,9,1.2,13.6,1.7c3.6,0.4,7.1,1.4,10.5,2.8c3.1,1.3,6,2.9,8.5,5C159.1,17.7,159.8,21.1,158.2,23.8z"
+                                                  />
+                                                </svg>
                                               </span>
-                                            
+                                              {/* SVG END */}
+                                            </span>
                                           </h5>
                                         </div>
                                         {/* Course Grid START */}
@@ -641,13 +716,34 @@ Contact form START */}
                                                           </a>
                                                         )}
                                                         {/* Favorite icon */}
-                                                        <a
-                                                          className="h5 mb-0"
-                                                          onClick={() => handleToggleFavorite(course._id)}
+                                                        <div
+                                                          className={`icon-circle ${
+                                                            formData.likedCourses.includes(
+                                                              course._id
+                                                            )
+                                                              ? "liked"
+                                                              : ""
+                                                          }`}
+                                                          onClick={() =>
+                                                            handleToggleFavorite(
+                                                              course._id
+                                                            )
+                                                          }
                                                         >
-                                                          <i className={formData.likedCourses.includes(course._id) ? "fas fa-heart text-danger" : "far fa-heart"} />
-                                                        </a>  
-
+                                                          {formData.likedCourses.includes(
+                                                            course._id
+                                                          ) ? (
+                                                            <FontAwesomeIcon
+                                                              icon={faCheck}
+                                                              className="text-success"
+                                                            /> // Checked icon
+                                                          ) : (
+                                                            <FontAwesomeIcon
+                                                              icon={faPlus}
+                                                              className="text-primary"
+                                                            /> // Plus icon
+                                                          )}
+                                                        </div>
                                                       </div>
                                                       {/* Title */}
                                                       <h6 className="card-title">
@@ -712,7 +808,6 @@ Contact form START */}
                                 AVAILABLE TIME SLOTS
                               </button>
                             </h6>
-                            {/* Body */}
                             <div
                               id="collapse-3"
                               className="accordion-collapse collapse"
@@ -720,10 +815,96 @@ Contact form START */}
                               data-bs-parent="#accordionExample2"
                             >
                               <div className="accordion-body mt-3">
-                              <CalendarInscription/>
+                                <div className="table-responsive">
+                                  <table className="calendar-table">
+                                    <thead>
+                                      <tr>
+                                        <th className="time-column"></th>
+                                        {dayNames.map((day) => (
+                                          <th key={day}>{day}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {[...Array(20)].map((_, index) => {
+                                        const startHour =
+                                          Math.floor(index / 2) + 10;
+                                        const startMinute =
+                                          index % 2 === 0 ? "00" : "30";
+                                        const endHour =
+                                          Math.floor((index + 1) / 2) + 10;
+                                        const endMinute =
+                                          (index + 1) % 2 === 0 ? "00" : "30";
+                                        const startTime = `${startHour}:${startMinute}`;
+                                        const endTime = `${endHour}:${endMinute}`;
+
+                                        return (
+                                          <tr key={index}>
+                                            <td className="time-column">
+                                              {startTime} - {endTime}
+                                            </td>
+                                            {dayNames.map((day, dayIndex) => (
+                                              <td
+                                                key={dayIndex}
+                                                className={`
+                        ${
+                          !isSelectable(day, startHour, parseInt(startMinute))
+                            ? "non-selectable-cell"
+                            : ""
+                        }
+                        ${
+                          selectedTimeSlots.some(
+                            (slot) =>
+                              slot.day === day &&
+                              slot.startTime === startTime &&
+                              slot.endTime === endTime
+                          )
+                            ? "selected"
+                            : ""
+                        }
+                      `}
+                                                onClick={() =>
+                                                  isSelectable(
+                                                    day,
+                                                    startHour,
+                                                    parseInt(startMinute)
+                                                  ) &&
+                                                  handleCellClick(
+                                                    day,
+                                                    startTime,
+                                                    endTime
+                                                  )
+                                                }
+                                                onMouseEnter={() =>
+                                                  isSelectable(
+                                                    day,
+                                                    startHour,
+                                                    parseInt(startMinute)
+                                                  ) &&
+                                                  handleCellHover(
+                                                    day,
+                                                    startTime,
+                                                    endTime
+                                                  )
+                                                }
+                                                onMouseDown={() =>
+                                                  setIsMouseDown(true)
+                                                }
+                                                onMouseUp={() =>
+                                                  setIsMouseDown(false)
+                                                }
+                                              ></td>
+                                            ))}
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
                             </div>
                           </div>
+
                           {/* Button */}
                           <div className="col-12 text-center mt-4">
                             <button

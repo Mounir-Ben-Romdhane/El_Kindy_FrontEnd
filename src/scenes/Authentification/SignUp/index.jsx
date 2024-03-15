@@ -58,7 +58,7 @@ function Index() {
     console.log("values", values);
 
     const savedUserResponse = await fetch(
-      "https://el-kindy-project-backend.onrender.com/auth/register",
+      "http://localhost:3001/auth/register",
       {
         method: "POST",
         headers: { "Content-type": "application/json" },

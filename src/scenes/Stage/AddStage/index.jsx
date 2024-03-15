@@ -5,7 +5,7 @@ import React, {useEffect, useState} from 'react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-notifications/lib/notifications.css';
-import { Link, useNavigate } from 'react-router-dom'
+import {  useNavigate } from 'react-router-dom'
 
 
 
@@ -60,7 +60,7 @@ const addCourse = async (values, onSubmitProps) => {
     console.log("picture name", values.picture.name);
     
     const savedCourseResponse = await fetch(
-        "https://el-kindy-project-backend.onrender.comhttp://localhost:3001/api/stage",
+        "http://localhost:3001/api/stage",
         {
             method: "POST",
             body: formData,

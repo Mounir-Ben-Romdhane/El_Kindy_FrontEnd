@@ -1,11 +1,36 @@
 import react from  'react';
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from "react-redux";
 
+import { jwtDecode } from "jwt-decode";
 
  const  Index = () => {
 
+      //const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const accessToken = useSelector((state) => state.accessToken);
+  const user = accessToken ? jwtDecode(accessToken) : "";
+
+  const getAvatarSrc = () => {
+    
+    if (user && user.picturePath !== "" && !user.authSource === "local") {
+      // If user has a custom picture path
+      return `http://localhost:3001/assets/${user.picturePath}`;
+    } else if (user && user.authSource === "local" && user.gender !== "") {
+
+      // If user has no custom picture but has a gender
+      return user.gender === 'male' ? '/assets/images/element/01.jpg' : '/assets/images/element/02.jpg';
+    } else {
+      // Default avatar if no picture path or gender is available
+      return user.picturePath;
+    }
+  };
+
 
     return (
-
 <section className="pt-0">
                     {/* Main banner background image */}
                     <div className="container-fluid px-0">
@@ -21,23 +46,23 @@ import react from  'react';
                                         {/* Avatar */}
                                         <div className="col-auto mt-4 mt-md-0">
                                             <div className="avatar avatar-xxl mt-n3">
-                                                <img className="avatar-img rounded-circle border border-white border-3 shadow" src="/assets/images/avatar/01.jpg" alt />
-                                            </div>
+                                            <img
+                                                className="avatar-img rounded-circle"
+                                                src={getAvatarSrc()}
+                                                alt="avatar"
+                                                />          
+                                             </div>
                                         </div>
                                         {/* Profile info */}
                                         <div className="col d-md-flex justify-content-between align-items-center mt-4">
                                             <div>
-                                                <h1 className="my-1 fs-4">Lori Stevens <i className="bi bi-patch-check-fill text-info small" /></h1>
+                                                <h1 className="my-1 fs-4">{user?.fullName} <i className="bi bi-patch-check-fill text-info small" /></h1>
                                                 <ul className="list-inline mb-0">
-                                                    <li className="list-inline-item h6 fw-light me-3 mb-1 mb-sm-0"><i className="fas fa-star text-warning me-2" />4.5/5.0</li>
                                                     <li className="list-inline-item h6 fw-light me-3 mb-1 mb-sm-0"><i className="fas fa-user-graduate text-orange me-2" />12k Enrolled Students</li>
                                                     <li className="list-inline-item h6 fw-light me-3 mb-1 mb-sm-0"><i className="fas fa-book text-purple me-2" />25 Courses</li>
                                                 </ul>
                                             </div>
-                                            {/* Button */}
-                                            <div className="d-flex align-items-center mt-2 mt-md-0">
-                                                <a href="instructor-create-course.html" className="btn btn-success mb-0">Create a course</a>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -56,7 +81,6 @@ import react from  'react';
                         </div>
                     </div>
                 </section>
-
 );
     }
  export  default Index ;

@@ -20,7 +20,7 @@ const GoogleAuth = () => {
   const login = async (values, onSubmitProps) => {
     setOpen(true);
     try {
-      console.log("Logging in...", values);
+      //console.log("Logging in...", values);
       const loggedInResponse = await fetch(
         "http://localhost:3001/auth/googleAuth",
         {
@@ -30,14 +30,13 @@ const GoogleAuth = () => {
         }
       );
       const loggedIn = await loggedInResponse.json();
-
+      console.log("LoggedIn", loggedIn);
       if (loggedIn.accessToken && loggedIn.refreshToken) {
-        console.log("logged successfully!!");
-        console.log("LoggedIn", loggedIn);
+      //  console.log("logged successfully!!");
+        console.log("after LoggedIn", loggedIn);
 
         dispatch(
           setLogin({
-            //user: loggedIn.user,
             accessToken: loggedIn.accessToken,
             refreshToken: loggedIn.refreshToken,
           })
@@ -45,11 +44,16 @@ const GoogleAuth = () => {
         const accessTokenn = loggedIn.accessToken;
         const userRoles = accessTokenn ? jwtDecode(accessTokenn).roles : []; 
         
-        if (userRoles.includes('admin') || userRoles.includes('teacher') || userRoles.includes('superAdmin')) {
+        if (userRoles.includes('admin')|| userRoles.includes('superAdmin')) {
           navigate("/dashboard-admin");
           //console.log("userRole 1: ",userRoles);
-        } else if(userRoles.includes('parent') || userRoles.includes('student')){
+        }else if (userRoles.includes('teacher') )  {
+          navigate('/dashbordTeacher');
           //console.log("userRole 2: ",userRoles);
+        }
+        
+        else if(userRoles.includes('parent') || userRoles.includes('student')){
+          //console.log("userRole 3: ",userRoles);
             navigate("/home");
         }
       }
@@ -61,9 +65,9 @@ const GoogleAuth = () => {
   };
 
   const handleSuccess = async (credentialResponse) => {
-    console.log("Success:", credentialResponse);
+    //console.log("Success:", credentialResponse);
     const credentialResponseDecoded = jwtDecode(credentialResponse.credential);
-    console.log("User Object:", credentialResponseDecoded);
+    //console.log("User Object:", credentialResponseDecoded);
 
     // Prepare JSON object with decoded token data
     const userData = {
@@ -73,7 +77,7 @@ const GoogleAuth = () => {
       family_name: credentialResponseDecoded.family_name,
       picture: credentialResponseDecoded.picture,
     };
-    console.log("User Data:", userData);
+   // console.log("User Data:", userData);
     await login(userData);
   };
 

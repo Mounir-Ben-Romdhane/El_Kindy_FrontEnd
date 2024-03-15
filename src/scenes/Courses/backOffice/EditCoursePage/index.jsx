@@ -1,20 +1,19 @@
 import BannerStart from 'components/BannerStart'
 import SideBar from 'components/SideBar'
 import TopBarBack from 'components/TopBarBack'
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState} from 'react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-notifications/lib/notifications.css';
-import { Link, useNavigate } from 'react-router-dom'
-import { loadScripts } from '../../../scriptLoader';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { setAccessToken, setLogout } from "../../../../state";
+import refreshToken from "scenes/Authentification/TokenService/tokenService";
 import axios from 'axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import 'react-quill/dist/quill.bubble.css';
-//refreshToken
-import useAxiosPrivate from "hooks/useAxiosPrivate";
 
-//test
 const  modules  = {
   toolbar: [
       [{ font: [] }],
@@ -29,52 +28,78 @@ const  modules  = {
   ],
 };
 
-function Index() {
+function EditCourse() {
 
-  const [dataTheme, setDataTheme] = useState('');
-  const scriptsLoaded = useRef(false);
+    const [dataTheme, setDataTheme] = useState('');
+      
+  // Inside your component function
+const [fullDescription, setFullDescription] = useState('');
+    const [course, setCourse] = useState({
+        title: "",
+        description: "",
+        picturePath: "",
+        courseCategory: "",
+        courseLevel: "",
+        courseTime: 0,
+        coursePrice: 0,
+        fullDescription:""
+    });
+    const dispatch = useDispatch();
+    const { id } = useParams();
+    const accessToken = useSelector((state) => state.accessToken);
+  const refreshTokenState = useSelector((state) => state.refreshToken);
   const [categories, setCategories] = useState([]);
-  //refresh token
-  const axiosPrivate = useAxiosPrivate();
-
-  
-
-
   const fetchCategories = async () => {
     try {
-      const response = await axiosPrivate.get('/api/categories');
+      const response = await axios.get("http://localhost:3001/api/categories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
 
-  useEffect(() => {
-    // Retrieve the value of data-theme from localStorage
-    const themeValue = localStorage.getItem('data-theme');
-
-    fetchCategories();
+    useEffect(() => {
+      fetchCategories();
+        const fetchData = async () => {
+          try {
+            const response = await fetch(`http://localhost:3001/course/${id}`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+            if (response.ok) {
+              const data = await response.json();
+              setCourse(data);
+              setFullDescription(data.fullDescription);
+            } else if (response.status === 401 || response.status === 403 ) {
+              // Refresh access token
+              const newAccessToken = await refreshToken(refreshTokenState, dispatch);
+              if (newAccessToken) {
+                // Retry fetching courses with the new access token
+                dispatch(setAccessToken({ accessToken: newAccessToken }));
+                //fetchData();
+                console.log("newAccessToken : ", newAccessToken);
+              } else {
+                console.error("Failed to refresh access token.");
+                dispatch(setLogout()); // Log out user if token refresh fails
+              }
+            } else {
+              const errorMessage = await response.text();
+              //dispatch(setLogout()); // Log out user if token refresh fails
+              throw new Error(errorMessage);
+            }
+          } catch (error) {
+            console.error("Error fetching courses:", error);
+            // Handle error
+          }
+        };
     
-    setDataTheme(themeValue);
-    const scripts = [
-      '/assets/js/functions.js',
-    ];
+        if (id) fetchData();
+      }, [accessToken, dispatch, id]);
 
-    if (!scriptsLoaded.current) {
-      loadScripts(scripts);
-      scriptsLoaded.current = true;
-    }
-
-    return () => {
-      // Remove all script tags
-      const scriptTags = document.querySelectorAll('script[src^="/assets"]');
-      scriptTags.forEach((scriptTag) => {
-        scriptTag.parentNode.removeChild(scriptTag);
-      });
-    };
-  }, []); // Empty dependency array ensures this effect runs only once
-
-  
+    
 // State to hold the image name
 const [imageName, setImageName] = useState(null);
 // State to hold the image file
@@ -103,7 +128,8 @@ const handleRemoveImage = () => {
 //const dispatch = useDispatch();
 const navigate = useNavigate();
 
-const addCourse = async (values, onSubmitProps) => {
+
+const updateCourse = async (values, onSubmitProps) => {
     console.log("values",values);
     // this allow us to send form info with image
     const formData = new FormData();
@@ -114,50 +140,66 @@ const addCourse = async (values, onSubmitProps) => {
     console.log("formData",formData);
     console.log("picture name", values.picture.name);
     
-    try {
-      const response = await axiosPrivate.post("/course/add", formData);
-          const savedCourse = response.data;
-          console.log('Course added!');
-          console.log("Course", savedCourse);
-          // Show the toast notification with autoClose: false
-          toast.success("Course added successfully !!", { autoClose: 1500,
+    const savedCourseResponse = await fetch(
+        `http://localhost:3001/course/update/${id}`,
+        {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            body: formData,
+        }
+    );
+    const savedCourse = await savedCourseResponse.json();
+    //onSubmitProps.resetForm();
+
+    if (savedCourse) {
+        console.log('Course updated!');
+            console.log("Course", savedCourse);
+            // Show the toast notification with autoClose: false
+            toast.success("Course updated successfully !!", { autoClose: 1500,
               style: {
-                  color: 'green' // Text color
+                color: 'green' // Text color
               }});
-          setTimeout(() => {
+            setTimeout(() => {
               navigate('/listCourses');
-          }, 2000);
-  } catch (error) {
-      console.error('Error adding course:', error);
-      // Handle error
-      toast.error("Failed to add course. Please try again.");
-  }
+            }, 2000);
+            
+    } 
 };
 
-const handleFormSubmit = async (values, onSubmitProps) => {
-  //values.preventDefault();
- // const formData = new FormData(values.target); // Create FormData object from form
- // const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
- // console.log("Values",formValues);
-   //await register(values, onSubmitProps);
-  //console.log("values",values);
-  //await addCourse(values, onSubmitProps);
-  values.preventDefault();
-  const formData = new FormData(values.target); // Create FormData object from form
-  formData.append('fullDescription', fullDescription); // Append full description to form data
-  const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
-  console.log("Values",formValues);
-  await addCourse(formValues, onSubmitProps);
-};
+const handleChange = (event) => {
+    const { name, value } = event.target;
+    setCourse((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
 
-// Inside your component function
-const [fullDescription, setFullDescription] = useState('');
 
 // Function to handle changes in the full description field
 const handleFullDescriptionChange = (content) => {
-    setFullDescription(content);
+  setFullDescription(content);
 };
+
+const handleFormSubmit = async (values, onSubmitProps) => {
+    //values.preventDefault();
+   // const formData = new FormData(values.target); // Create FormData object from form
+   // const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
+   // console.log("Values",formValues);
+     //await register(values, onSubmitProps);
+    //console.log("values",values);
+    //await addCourse(values, onSubmitProps);
+    values.preventDefault();
+    const formData = new FormData(values.target); // Create FormData object from form
+    formData.append('fullDescription', fullDescription); // Append full description to form data
+    const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
+    console.log("Values",formValues);
+    await updateCourse(formValues, onSubmitProps);
+  };
+
+
 
 
   return (
@@ -175,7 +217,7 @@ const handleFullDescriptionChange = (content) => {
               {/* =======================
               Page Banner START */}
                 <BannerStart 
-                  title= "Submit a new Course"
+                  title= "Update Course"
                   description= "Read our Before you create a course article before submitting!"
                 />
               {/* =======================
@@ -203,12 +245,12 @@ const handleFullDescriptionChange = (content) => {
                   {/* Course title */}
                   <div className="col-12">
                     <label className="form-label">Course title</label>
-                    <input className="form-control" name="title" type="text" placeholder="Enter course title" required/>
+                    <input className="form-control" onChange={handleChange} value={course.title} name="title" type="text" placeholder="Enter course title" required/>
                   </div>
                   {/* Short description */}
                   <div className="col-12">
                     <label className="form-label">Short description</label>
-                    <textarea className="form-control" name="description" rows={2} placeholder="Enter keywords" defaultValue={""} required />
+                    <textarea className="form-control" onChange={handleChange} value={course.description} name="description" rows={2} placeholder="Enter keywords" defaultValue={""} required />
                   </div>
                   {/* Upload image START */}
                   <div className="m-4">
@@ -216,18 +258,27 @@ const handleFullDescriptionChange = (content) => {
                     <div className="col-12">
                       <div className="text-center justify-content-center align-items-center mx-5 my-5 p-sm-5 border border-2 border-dashed position-relative rounded-3">
                         {/* Display the image */}
-                        {imageFile && (
-                          <div>
-                            <img
-                              src={URL.createObjectURL(imageFile)}
-                              alt="Uploaded image"
-                              className="img-fluid mb-2"
-                              style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
-                              required
-                            />
-                            <p className="mb-0">Uploaded image</p>
-                          </div>
-                        )}
+                        {(imageFile ) ?(
+                            <div>
+                                <img
+                                src={URL.createObjectURL(imageFile)}
+                                alt="Uploaded image"
+                                className="img-fluid mb-2"
+                                style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
+                                required
+                                />
+                                <p className="mb-0">Uploaded image</p>
+                            </div>
+                        ) : <div>
+                                <img
+                                src={`http://localhost:3001/assets/${course.picturePath}`}
+                                alt="Uploaded image"
+                                className="img-fluid mb-2"
+                                style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
+                                required
+                                />
+                        <p className="mb-0">{course.picturePath}</p>
+                    </div>}
                     {/* Upload image button */}
                     <div className="mb-3">
                       <h6 className="my-2">Upload course image here, or <span className="text-primary" style={{cursor: 'pointer'}}>Browse</span></h6>
@@ -244,7 +295,7 @@ const handleFullDescriptionChange = (content) => {
                       <p className="small mb-0 mt-2"><b>Note:</b> Only JPG, JPEG, and PNG formats are supported. Our suggested dimensions are 600px * 450px. Larger images will be cropped to fit our thumbnails/previews.</p>
                     </div>
                     {/* Remove image button */}
-                    {imageName && (
+                    {(imageName ) && (
                       <div className="d-sm-flex justify-content-end mt-2">
                         <button
                           type="button"
@@ -262,7 +313,7 @@ const handleFullDescriptionChange = (content) => {
                   {/* Course category */}
                   <div className="col-md-6">
                     <label className="form-label">Course category</label>
-                    <select name="courseCategory" className="form-select  border-0 z-index-9 bg-transparent" aria-label=".form-select-sm" data-search-enabled="true" required>
+                    <select name="courseCategory" onChange={handleChange} value={course.courseCategory} className="form-select  border-0 z-index-9 bg-transparent" aria-label=".form-select-sm" data-search-enabled="true" required>
                     <option value="">Select category</option>
                         {categories.map(category => (
                           <option key={category._id} value={category._id}>{category.name}</option>
@@ -272,7 +323,7 @@ const handleFullDescriptionChange = (content) => {
                   {/* Course level */}
                   <div className="col-md-6">
                     <label className="form-label">Course level</label>
-                    <select name="courseLevel" required className="form-select border-0 z-index-9 bg-transparent" aria-label=".form-select-sm" data-search-enabled="false" data-remove-item-button="true">
+                    <select name="courseLevel" onChange={handleChange} value={course.courseLevel} required className="form-select border-0 z-index-9 bg-transparent" aria-label=".form-select-sm" data-search-enabled="false" data-remove-item-button="true">
                       <option value>Select course level</option>
                       <option>All level</option>
                       <option>Beginner</option>
@@ -286,36 +337,31 @@ const handleFullDescriptionChange = (content) => {
                   {/* Course time */}
                   <div className="col-md-6">
                     <label className="form-label">Course time</label>
-                    <input name="courseTime" className="form-control" type="text" placeholder="Enter course time" />
+                    <input name="courseTime" onChange={handleChange} value={course.courseTime} className="form-control" type="text" placeholder="Enter course time" />
                   </div>
                   
                   {/* Course price */}
                   <div className="col-md-6">
                     <label className="form-label">Course price</label>
-                    <input name="coursePrice" type="text" className="form-control" placeholder="Enter course price" />
+                    <input name="coursePrice" onChange={handleChange} value={course.coursePrice} type="text" className="form-control" placeholder="Enter course price" />
                   </div>
 
 
                   <div className="col-12">
-    <label className="form-label">Add description</label>
-    
-    {/* Main toolbar */}
-    <div className="bg-body border overflow-hidden" style={{ borderRadius: '15px' }}>
-        <ReactQuill 
-            modules={modules}  
-            theme="snow" 
-            value={fullDescription} 
-            onChange={handleFullDescriptionChange} 
-            placeholder="The content starts here..."  
-            style={{ height: '100%' }} // Adjust the height of the ReactQuill editor
-        />
+        <label className="form-label">Add description</label>
+        
+        {/* Main toolbar */}
+        <div className="bg-body border rounded-bottom overflow-hidden" style={{ borderRadius: '15px' }}>
+            <ReactQuill 
+                modules={modules}  
+                theme="snow"
+                onChange={handleFullDescriptionChange}
+                value={fullDescription} 
+                placeholder="The content starts here..."  
+                style={{ height: '100%' }} // Adjust the height of the ReactQuill editor
+            />
+        </div>
     </div>
-</div>
-
-
-
-
-
                   
                 </div>
                 
@@ -341,4 +387,4 @@ const handleFullDescriptionChange = (content) => {
   )
 }
 
-export default Index
+export default EditCourse

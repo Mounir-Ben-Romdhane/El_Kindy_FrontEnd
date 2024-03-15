@@ -10,7 +10,7 @@ const EmailVerify = () => {
     const verifyAccount = async () => {
     
         const verifyAccountResponse = await fetch(
-          `https://el-kindy-project-backend.onrender.com/auth/verify-account/${id}/verify`,
+          `http://localhost:3001/auth/verify-account/${id}/verify`,
           {
             method: "GET",
             headers: {

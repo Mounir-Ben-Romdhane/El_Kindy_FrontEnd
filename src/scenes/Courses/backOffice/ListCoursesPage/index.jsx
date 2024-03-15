@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { setAccessToken, setLogout } from "../../../state";
+import { setAccessToken, setLogout } from "../../../../state";
 import refreshToken from "scenes/Authentification/TokenService/tokenService";
 import axios from "axios";
 //refreshToken
@@ -28,48 +28,7 @@ function Index() {
 
   useEffect(() => {
 
-    /*
-    const fetchData = async () => {
-      try {
-        const response = await fetch("http://localhost:3001/course/all", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCourses(data.data);
-        } else if (response.status === 403 ) {
-          // Refresh access token
-          const newAccessToken = await refreshToken(
-            refreshTokenState,
-            dispatch
-          );
-          if (newAccessToken) {
-            // Retry fetching courses with the new access token
-            dispatch(setAccessToken({ accessToken: newAccessToken }));
-            //fetchData();
-            console.log("newAccessToken : ", newAccessToken);
-          } else {
-            console.error("Failed to refresh access token.");
-            dispatch(setLogout()); // Log out user if token refresh fails
-          }
-        } else {
-          const errorMessage = await response.text();
-          //dispatch(setLogout()); // Log out user if token refresh fails
-          throw new Error(errorMessage);
-        }
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        // Handle error
-      }
-    };
-
-    fetchData();
-
-    */
+  
 
     const controller = new AbortController();
 
@@ -241,7 +200,7 @@ function Index() {
                               {/* Affichage de l'image */}
                               {course.picturePath ? (
                                 <img
-                                  src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
+                                  src={`http://localhost:3001/assets/${course.picturePath}`}
                                   alt="Course"
                                   style={{
                                     width: "100px",
@@ -280,15 +239,14 @@ function Index() {
                             <td>
                               <Link
                                 to={`/edit-course/${course._id}`}
-                                className="btn btn-sm btn-dark me-1 mb-1 mb-md-0"
+                                className="btn btn-success-soft btn-round me-1 mb-1 mb-md-0"
                               >
-                                Edit
+                                <i class="bi bi-pencil-square"></i>
                               </Link>
                               <button
                                 onClick={() => handleDelete(course._id)}
-                                className="btn btn-sm btn-danger me-1 mb-1 mb-md-0"
-                              >
-                                Delete
+                                className="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0">
+                                  <i class="bi bi-trash"></i>
                               </button>
                             </td>
                           </tr>
