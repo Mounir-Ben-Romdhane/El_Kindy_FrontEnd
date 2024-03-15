@@ -88,7 +88,7 @@ Main Banner START */}
         
         
         {/* Image */}
-        <img src={`http://localhost:3001/assets/${course.picturePath}`} className="rounded-3 z-index-1 position-relative w-500px h-420px" alt="Tutor image" />
+        <img src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`} className="rounded-3 z-index-1 position-relative w-500px h-420px" alt="Tutor image" />
       </div>
       {/* Right content END */}
     </div>

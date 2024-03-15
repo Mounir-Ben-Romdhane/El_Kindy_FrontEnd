@@ -48,7 +48,7 @@ const addCategory = async (values, onSubmitProps) => {
     console.log("picture name", values.picture.name);
     
     const savedUserResponse = await fetch(
-        "http://localhost:3001/api/categories",
+        "https://el-kindy-project-backend.onrender.com/api/categories",
         {
             method: "POST",
             body: formData,

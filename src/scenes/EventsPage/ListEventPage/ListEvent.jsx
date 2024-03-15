@@ -27,7 +27,7 @@ function Index() {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/event/events");
+      const response = await axios.get("https://el-kindy-project-backend.onrender.com/event/events");
       const sortedEvents = sortEvents(response.data);
       setEvents([...sortedEvents]);
     } catch (error) {
@@ -62,7 +62,7 @@ function Index() {
 
   const deleteEvents = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/event/events/${id}`);
+      await axios.delete(`https://el-kindy-project-backend.onrender.com/event/events/${id}`);
       const updatedEvents = events.filter((event) => event._id !== id);
       setEvents(updatedEvents);
       toast.success("Event Deleted successfully !!", {

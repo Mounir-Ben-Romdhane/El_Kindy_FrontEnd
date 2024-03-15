@@ -61,7 +61,7 @@
         try {
           setLoading(true);
           const response = await axios.get(
-            `http://localhost:3001/event/events/${id}`
+            `https://el-kindy-project-backend.onrender.com/event/events/${id}`
           );
           setEventDetails(response.data);
         } catch (error) {
@@ -87,7 +87,7 @@
       setIsSubmitting(true);
       try {
         // Here you should replace 'YOUR_RESERVATION_ENDPOINT' with your actual endpoint URL
-        const url = `http://localhost:3001/events/${id}/reservation`;
+        const url = `https://el-kindy-project-backend.onrender.com/events/${id}/reservation`;
         const dataToSend = {
           userName: reservation.name,
           userEmail: reservation.email, // Assuming 'reservation.email' holds the user's email

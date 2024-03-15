@@ -12,7 +12,7 @@ const Index = () => {
     useEffect(() => {
         const fetchMeetings = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/meeting/getAll');
+                const response = await axios.get('https://el-kindy-project-backend.onrender.com/meeting/getAll');
                 console.log('Réponse de l\'API :', response.data);
                 setMeetings(response.data.data);
             } catch (error) {

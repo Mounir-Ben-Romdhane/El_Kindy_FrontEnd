@@ -18,7 +18,7 @@ function Index() {
     // Fonction pour récupérer les catégories
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/categories", {
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/api/categories", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -38,7 +38,7 @@ function Index() {
   }, []);*/
   const fetchCategories = async () => {
     try {
-      const response = await axiosPrivate.get("http://localhost:3001/api/categories");
+      const response = await axiosPrivate.get("https://el-kindy-project-backend.onrender.com/api/categories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -68,7 +68,7 @@ function Index() {
 
   const deleteCategory = async (categoryId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/categories/${categoryId}`);
+      await axios.delete(`https://el-kindy-project-backend.onrender.com/api/categories/${categoryId}`);
       fetchCategories(); // Re-fetch categories to update the list after deletion
       MySwal.fire(
         'Supprimé!',
@@ -172,7 +172,7 @@ function Index() {
         {/* Affichage de l'image */}
         {category.picturePath ? (
         <img
-        src={`http://localhost:3001/assets/${category.picturePath}`}
+        src={`https://el-kindy-project-backend.onrender.com/assets/${category.picturePath}`}
         alt="Category"
         style={{ width: '100px', height: 'auto' }} // Adjust size as needed
       />

@@ -27,7 +27,7 @@ function Index() {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/course/getAllByCategories"
+        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);
@@ -609,7 +609,7 @@ Main Banner END */}
                         <div className="card shadow h-100">
                           {/* Image */}
                           <img
-                            src={`http://localhost:3001/assets/${course.picturePath}`}
+                            src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                             className="card-img-top"
                             alt="course image"
                             style={{ height: "230px" }} // Set fixed dimensions here

@@ -30,7 +30,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchPlannings = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/planning/teacher/${decodeToken.id}`, {
+        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/teacher/${decodeToken.id}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },
@@ -59,7 +59,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/salle")
+      .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -67,7 +67,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the rooms", error);
       });
       axios
-      .get("http://localhost:3001/course/all")
+      .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
         console.log(response.data);
@@ -77,7 +77,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("http://localhost:3001/auth/teachers")
+      .get("https://el-kindy-project-backend.onrender.com/auth/teachers")
       .then((response) => {
         setTeachers(response.data);
       })
@@ -86,7 +86,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("http://localhost:3001/auth/students")
+      .get("https://el-kindy-project-backend.onrender.com/auth/students")
       .then((response) => {
         setStudents(response.data);
       })
@@ -98,7 +98,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/salle")
+      .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -107,7 +107,7 @@ const MyCalendar = () => {
       });
 
       axios
-      .get("http://localhost:3001/course/all")
+      .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
       })

@@ -54,7 +54,7 @@ function Index() {
 
   const handleDelete = async (id) => {
     try {
-      /*await fetch(`http://localhost:3001/course/delete/${id}`, {
+      /*await fetch(`https://el-kindy-project-backend.onrender.com/course/delete/${id}`, {
         method: "DELETE",
       });*/
       await axiosPrivate.delete(`/course/delete/${id}`);
@@ -200,7 +200,7 @@ function Index() {
                               {/* Affichage de l'image */}
                               {course.picturePath ? (
                                 <img
-                                  src={`http://localhost:3001/assets/${course.picturePath}`}
+                                  src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                                   alt="Course"
                                   style={{
                                     width: "100px",

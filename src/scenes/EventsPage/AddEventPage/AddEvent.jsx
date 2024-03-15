@@ -48,7 +48,7 @@ function AddEvent() {
     console.log("formData", formData);
     console.log("picture name", values.picture.name);
 
-    const savedEventResponse = await fetch("http://localhost:3001/event/add", {
+    const savedEventResponse = await fetch("https://el-kindy-project-backend.onrender.com/event/add", {
       method: "POST",
       body: formData,
     });

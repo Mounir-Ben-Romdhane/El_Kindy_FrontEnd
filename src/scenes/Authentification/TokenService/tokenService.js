@@ -3,7 +3,7 @@ import { setLogout } from "../../../state";
 
 const refreshToken = async (refreshToken, dispatch) => {
     try {
-      const refreshedTokenResponse = await fetch("http://localhost:3001/auth/refresh-token", {
+      const refreshedTokenResponse = await fetch("https://el-kindy-project-backend.onrender.com/auth/refresh-token", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

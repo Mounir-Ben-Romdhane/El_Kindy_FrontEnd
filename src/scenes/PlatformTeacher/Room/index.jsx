@@ -82,7 +82,7 @@ const Room = () => {
       const startTimeDate = new Date(`2022-01-01T${popupData.startTime}:00Z`);
       const endTimeDate = new Date(`2022-01-01T${popupData.endTime}:00Z`);
 
-      const response = await fetch("http://localhost:3001/meeting/add", {
+      const response = await fetch("https://el-kindy-project-backend.onrender.com/meeting/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ const Room = () => {
     // Fetch all inscriptions from your backend API
     const fetchInscriptions = async () => {
       try {
-        const response = await fetch("http://localhost:3001/inscription/all");
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/inscription/all");
         if (response.ok) {
           const data = await response.json();
           setStudentsList(data.data);

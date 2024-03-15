@@ -15,7 +15,7 @@ function ListEventUser() {
     // Fetch events when the component mounts
     const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/event/events");
+        const response = await axios.get("https://el-kindy-project-backend.onrender.com/event/events");
         console.log('Response Data:', response.data);
         const filteredEvents = response.data.filter(event => {
           // Convert event start date and current date to Date objects
@@ -102,7 +102,7 @@ Trending courses START */}
             {/* Wrap the image inside a div and apply background color to the div */}
             <div style={{ background: 'linear-gradient(rgba(236, 231, 225, 0.25), rgba(18, 91, 193, 0.93))' }}>
               <img
-                src={event.picturePath ? `http://localhost:3001/assets/${event.picturePath}` : "assets/images/default-event.jpg"}
+                src={event.picturePath ? `https://el-kindy-project-backend.onrender.com/assets/${event.picturePath}` : "assets/images/default-event.jpg"}
                 alt={event.title}
                 className="card-img-top"
                 style={{ height: "200px", objectFit: "cover" }}
