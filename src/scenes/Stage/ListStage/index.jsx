@@ -51,10 +51,6 @@ function Index() {
       <main>
 
 
-      <BannerStartHome
-          title="All Stages"
-          description="Find Out Our stages."
-        />
         <SideBar />
         {/* Page content START */}
         <div className="page-content">
