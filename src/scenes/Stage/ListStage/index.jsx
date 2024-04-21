@@ -13,7 +13,7 @@ function Index() {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const response = await fetch("http://localhost:3001/stage");
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/stage");
         const { stages } = await response.json();
         setStages(stages);
         setTotalEntries(stages.length); // Update the totalEntries state
@@ -32,7 +32,7 @@ function Index() {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:3001/stage/${id}`, {
+      await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
         method: 'DELETE',
       });
       // Filter out the deleted stage from the state
@@ -131,7 +131,7 @@ function Index() {
                                 {/* Affichage de l'image */}
                                 {stage.picturePath ? (
                                   <img
-                                    src={`http://localhost:3001/assets/${stage.picturePath}`}
+                                    src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
                                     alt=""
                                     style={{ width: '30px', height: 'auto' }} // Adjust size as needed
                                   />

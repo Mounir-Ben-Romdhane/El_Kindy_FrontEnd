@@ -31,7 +31,7 @@ const MyCalendar = () => {
   const handleEventClick = async (event) => {
     console.log("handleEventClick called with event:", event);
     try {
-      const response = await axios.get(`http://localhost:3001/planning/${event.id}/details`);
+      const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/${event.id}/details`);
       const courseDetails = response.data;
       
       setSelectedEvent(courseDetails);
@@ -48,7 +48,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchPlannings = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/planning/teacher/${decodeToken.id}`, {
+        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/teacher/${decodeToken.id}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },
@@ -77,7 +77,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/salle")
+      .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -85,7 +85,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the rooms", error);
       });
       axios
-      .get("http://localhost:3001/course/all")
+      .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
         console.log(response.data);
@@ -94,7 +94,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the courses", error);
       });
       axios
-      .get("http://localhost:3001/classes/getAll") // Récupérez la liste des cours
+      .get("https://el-kindy-project-backend.onrender.com/classes/getAll") // Récupérez la liste des cours
       .then((response) => {
         setClasses(response.data); // Stockez les cours dans l'état
         console.log("claaassssss",response.data);
@@ -103,7 +103,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the courses", error);
       });
     axios
-      .get("http://localhost:3001/auth/teachers")
+      .get("https://el-kindy-project-backend.onrender.com/auth/teachers")
       .then((response) => {
         setTeachers(response.data);
       })
@@ -112,7 +112,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("http://localhost:3001/auth/students")
+      .get("https://el-kindy-project-backend.onrender.com/auth/students")
       .then((response) => {
         setStudents(response.data);
       })
@@ -124,7 +124,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/salle")
+      .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -133,7 +133,7 @@ const MyCalendar = () => {
       });
 
       axios
-      .get("http://localhost:3001/course/all")
+      .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
       })

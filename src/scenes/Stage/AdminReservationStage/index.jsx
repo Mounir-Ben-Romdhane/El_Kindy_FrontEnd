@@ -32,7 +32,7 @@ function Index() {
 
   const fetchReservations = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/reservationstage/reservations");
+      const response = await axios.get("https://el-kindy-project-backend.onrender.com/reservationstage/reservations");
       setReservations(response.data);
     } catch (error) {
       console.error("Error fetching reservations:", error);
@@ -41,7 +41,7 @@ function Index() {
 
   const updateReservationStatus = async (reservation, status) => {
     try {
-      await axios.put(`http://localhost:3001/reservationstage/updateReservationStatus/${reservation}`, { status });
+      await axios.put(`https://el-kindy-project-backend.onrender.com/reservationstage/updateReservationStatus/${reservation}`, { status });
       MySwal.fire('Updated!', `The reservation has been ${status}.`, 'success');
       fetchReservations(); 
     } catch (error) {

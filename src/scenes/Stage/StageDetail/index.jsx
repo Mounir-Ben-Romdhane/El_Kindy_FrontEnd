@@ -20,7 +20,7 @@ function Index() {
     });    useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:3001/stage/${id}`, {
+          const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
             method: "GET",
           });
           if (response.ok) {
@@ -47,7 +47,7 @@ function Index() {
     setIsSubmitting(true);
     try {
       // Here you should replace 'YOUR_RESERVATION_ENDPOINT' with your actual endpoint URL
-      const url = `http://localhost:3001/reservationstage/${id}/reservation`;
+      const url = `https://el-kindy-project-backend.onrender.com/reservationstage/${id}/reservation`;
       const dataToSend = {
         userName: reservation.name,
         userEmail: reservation.email,
@@ -94,7 +94,7 @@ function Index() {
                       {/* Image */}
                       {stage.picturePath ? (
                         <img
-                          src={`http://localhost:3001/assets/${stage.picturePath}`}
+                          src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
                           alt=""
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           className="card-img-top"

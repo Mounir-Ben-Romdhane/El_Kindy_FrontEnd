@@ -43,7 +43,7 @@ function Index() {
   const fetchReservations = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/events/reservations"
+        "https://el-kindy-project-backend.onrender.com/events/reservations"
       );
       setReservations(response.data);
     } catch (error) {
@@ -54,7 +54,7 @@ function Index() {
   const updateReservationStatus = async (reservationId, status) => {
     try {
       await axios.patch(
-        `http://localhost:3001/events/reservations/${reservationId}`,
+        `https://el-kindy-project-backend.onrender.com/events/reservations/${reservationId}`,
         { status }
       );
       MySwal.fire("Updated!", `The reservation has been ${status}.`, "success");

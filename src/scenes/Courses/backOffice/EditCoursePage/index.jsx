@@ -51,7 +51,7 @@ const [fullDescription, setFullDescription] = useState('');
   const [categories, setCategories] = useState([]);
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/categories");
+      const response = await axios.get("https://el-kindy-project-backend.onrender.com/api/categories");
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -62,7 +62,7 @@ const [fullDescription, setFullDescription] = useState('');
       fetchCategories();
         const fetchData = async () => {
           try {
-            const response = await fetch(`http://localhost:3001/course/${id}`, {
+            const response = await fetch(`https://el-kindy-project-backend.onrender.com/course/${id}`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -141,7 +141,7 @@ const updateCourse = async (values, onSubmitProps) => {
     console.log("picture name", values.picture.name);
     
     const savedCourseResponse = await fetch(
-        `http://localhost:3001/course/update/${id}`,
+        `https://el-kindy-project-backend.onrender.com/course/update/${id}`,
         {
             method: "PATCH",
             headers: {
@@ -271,7 +271,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
                             </div>
                         ) : <div>
                                 <img
-                                src={`http://localhost:3001/assets/${course.picturePath}`}
+                                src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                                 alt="Uploaded image"
                                 className="img-fluid mb-2"
                                 style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions

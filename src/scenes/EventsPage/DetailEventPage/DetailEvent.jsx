@@ -67,7 +67,7 @@ function DetailEvents() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:3001/event/events/${id}`
+          `https://el-kindy-project-backend.onrender.com/event/events/${id}`
         );
         setEventDetails(response.data);
       } catch (error) {
@@ -112,7 +112,7 @@ function DetailEvents() {
 
  const submitReservation = async () => {
     try {
-      const url = `http://localhost:3001/events/${id}/reservation`;
+      const url = `https://el-kindy-project-backend.onrender.com/events/${id}/reservation`;
       const dataToSend = {
         userName: reservation.name,
         userEmail: reservation.email,
@@ -141,7 +141,7 @@ function DetailEvents() {
         eventId: eventDetails.id,
       };
       const response = await axios.post(
-        `http://localhost:3001/payment/payment`,
+        `https://el-kindy-project-backend.onrender.com/payment/payment`,
         paymentData
       );
       console.log("Payment initiation response:", response.data);

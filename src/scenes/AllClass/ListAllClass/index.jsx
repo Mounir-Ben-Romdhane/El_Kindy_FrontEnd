@@ -12,7 +12,7 @@ function Index() {
       
         const fetchData = async () => {
             try {
-                const response = await fetch("http://localhost:3001/classes/getAll", {
+                const response = await fetch("https://el-kindy-project-backend.onrender.com/classes/getAll", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -38,7 +38,7 @@ function Index() {
 
         const handleDelete = async (id) => {
             try {
-              await fetch(`http://localhost:3001/classes/${id}`, {
+              await fetch(`https://el-kindy-project-backend.onrender.com/classes/${id}`, {
                 method: "DELETE",
               });
         

@@ -36,7 +36,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchEventData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/planning/${selectedEventId}`);
+        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`);
         setEventDetails(response.data);
         setShowModal(true);
       } catch (error) {
@@ -62,7 +62,7 @@ const MyCalendar = () => {
   const updateEvent = async (event) => {
     try {
       // Envoyer la requête de mise à jour à l'API
-      const response = await axios.put(`http://localhost:3001/planning/${selectedEventId}`, event);
+      const response = await axios.put(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`, event);
   
       // Extraire les données mises à jour de la réponse de l'API
       const updatedEventData = response.data;
@@ -159,15 +159,15 @@ const MyEvent = ({ event }) => {
     const fetchData = async () => {
       try {
         const [teachersResponse, studentsResponse] = await Promise.all([
-          axios.get("http://localhost:3001/auth/teachers"),
-          axios.get("http://localhost:3001/auth/students"),
+          axios.get("https://el-kindy-project-backend.onrender.com/auth/teachers"),
+          axios.get("https://el-kindy-project-backend.onrender.com/auth/students"),
         ]);
 
         setTeachersData(teachersResponse.data);
         setStudentsData(studentsResponse.data);
 
         const eventsResponse = await axios.get(
-          "http://localhost:3001/planning/all"
+          "https://el-kindy-project-backend.onrender.com/planning/all"
         );
         const loadedEvents = eventsResponse.data.map((event) => {
           const teacher = teachersResponse.data.find(
@@ -198,8 +198,8 @@ const MyEvent = ({ event }) => {
 
   useEffect(() => {
     Promise.all([
-      axios.get("http://localhost:3001/auth/teachers"),
-      axios.get("http://localhost:3001/auth/students"),
+      axios.get("https://el-kindy-project-backend.onrender.com/auth/teachers"),
+      axios.get("https://el-kindy-project-backend.onrender.com/auth/students"),
     ])
       .then(([teachersResponse, studentsResponse]) => {
         setTeachers(teachersResponse.data);
@@ -211,7 +211,7 @@ const MyEvent = ({ event }) => {
         console.error("Error fetching teachers and students", error);
       });
       axiosPrivate
-      .get("http://localhost:3001/classes/getAll") // Récupérez la liste des cours
+      .get("https://el-kindy-project-backend.onrender.com/classes/getAll") // Récupérez la liste des cours
       .then((response) => {
         setClasses(response.data); // Stockez les cours dans l'état
         console.log("claaassssss",response.data);
@@ -220,7 +220,7 @@ const MyEvent = ({ event }) => {
         console.error("There was an error fetching the courses", error);
       });
     axios
-      .get("http://localhost:3001/salle")
+      .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -228,7 +228,7 @@ const MyEvent = ({ event }) => {
         console.error("There was an error fetching the rooms", error);
       });
     axiosPrivate
-      .get("http://localhost:3001/course/all") // Récupérez la liste des cours
+      .get("https://el-kindy-project-backend.onrender.com/course/all") // Récupérez la liste des cours
       .then((response) => {
         setCourses(response.data); // Stockez les cours dans l'état
         console.log(response.data);
@@ -237,7 +237,7 @@ const MyEvent = ({ event }) => {
         console.error("There was an error fetching the courses", error);
       });
    // Appel de l'API pour obtenir les informations de l'enseignant
-axios.get(`http://localhost:3001/auth/getTeacher/${teacherId}`)
+axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teacherId}`)
 .then((response) => {
   // Une fois la réponse reçue, extrayez les classes enseignées par l'enseignant
   const teacher = response.data;
@@ -253,7 +253,7 @@ axios.get(`http://localhost:3001/auth/getTeacher/${teacherId}`)
     
 
     axios
-      .get("http://localhost:3001/planning/all")
+      .get("https://el-kindy-project-backend.onrender.com/planning/all")
       .then((response) => {
         const loadedEvents = response.data.map((event) => {
           // Assurez-vous que chaque événement a un ID unique.
@@ -290,7 +290,7 @@ axios.get(`http://localhost:3001/auth/getTeacher/${teacherId}`)
   
   const deleteEvent = async (eventId) => {
     try {
-      await axiosPrivate.delete(`http://localhost:3001/planning/${selectedEventId}`);
+      await axiosPrivate.delete(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`);
   
       const eventIndex = events.findIndex((evt) => evt._id === selectedEventId);
       if (eventIndex !== -1) {
@@ -348,7 +348,7 @@ axios.get(`http://localhost:3001/auth/getTeacher/${teacherId}`)
     // Mettre à jour les événements dans le state
     setEvents(updatedEvents);
   
-    const response = axios.post("http://localhost:3001/planning/add", newEvent);
+    const response = axios.post("https://el-kindy-project-backend.onrender.com/planning/add", newEvent);
     const addedEvent = response.data;
   
     // Mise à jour de l'état avec le nouvel événement

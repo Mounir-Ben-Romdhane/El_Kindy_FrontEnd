@@ -18,7 +18,7 @@ import { jwtDecode } from "jwt-decode";
     
     if (user && user.picturePath !== "" && !user.authSource === "local") {
       // If user has a custom picture path
-      return `http://localhost:3001/assets/${user.picturePath}`;
+      return `https://el-kindy-project-backend.onrender.com/assets/${user.picturePath}`;
     } else if (user && user.authSource === "local" && user.gender !== "") {
 
       // If user has no custom picture but has a gender

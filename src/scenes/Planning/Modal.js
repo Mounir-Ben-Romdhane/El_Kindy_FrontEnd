@@ -82,7 +82,7 @@ console.log("eventassad",eventDetails)
   };
   
   const getClassesByTeacher = (teacherId) => {
-    axios.get(`http://localhost:3001/auth/getTeacher/${teacherId}`)
+    axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teacherId}`)
       .then((response) => {
         const teacher = response.data;
         const classesTaught = teacher.teacherInfo.classesTeaching;

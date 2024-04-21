@@ -52,7 +52,7 @@ function Index() {
     //console.log('values', values);
 
     const forgotPasswordResponse = await fetch(
-      "http://localhost:3001/auth/forgot-password",
+      "https://el-kindy-project-backend.onrender.com/auth/forgot-password",
       {
         method: "POST",
         headers: { "Content-type": "application/json" },

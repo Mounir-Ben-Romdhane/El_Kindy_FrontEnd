@@ -18,7 +18,7 @@ const handleFormSubmit = async (values, onSubmitProps) => {
 
   try {
     const savedClassesResponse = await fetch(
-      "http://localhost:3001/classes/create",
+      "https://el-kindy-project-backend.onrender.com/classes/create",
       {
         method: "POST",
         headers: {

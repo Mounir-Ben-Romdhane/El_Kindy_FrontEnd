@@ -83,7 +83,7 @@ function InscriptionCorsus(props) {
     setOpen(true);
     try {
       const loggedInResponse = await fetch(
-        "http://localhost:3001/inscription/add",
+        "https://el-kindy-project-backend.onrender.com/inscription/add",
         {
           method: "POST",
           headers: { "Content-type": "application/json" },
@@ -115,7 +115,7 @@ function InscriptionCorsus(props) {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/course/getAllByCategories"
+        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);
@@ -667,7 +667,7 @@ Contact form START */}
                                                   <div className="card shadow h-100">
                                                     {/* Image */}
                                                     <img
-                                                      src={`http://localhost:3001/assets/${course.picturePath}`}
+                                                      src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                                                       className="card-img-top"
                                                       alt="course image"
                                                       style={{

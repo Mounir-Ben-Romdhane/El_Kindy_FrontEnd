@@ -72,7 +72,7 @@ function Index() {
   const login = async (values, onSubmitProps) => {
     setOpen(true);
     try {
-      const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
+      const loggedInResponse = await fetch("https://el-kindy-project-backend.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify(values),

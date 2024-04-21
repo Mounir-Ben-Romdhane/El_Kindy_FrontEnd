@@ -154,7 +154,7 @@ const handleFilterSubmit = () => {
                         <div className="cardd shadow-hover h-100">
                           {/* Image */}
                           <img
-                            src={`http://localhost:3001/assets/${course.picturePath}`}
+                            src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`}
                             className="card-img-top"
                             alt="course image"
                             style={{ height: "200px" }} // Set fixed dimensions here
