@@ -83,7 +83,7 @@ function InscriptionCorsus(props) {
     setOpen(true);
     try {
       const loggedInResponse = await fetch(
-        "https://el-kindy-project-backend.onrender.com/inscription/add",
+        "http://localhost:3001/inscription/add",
         {
           method: "POST",
           headers: { "Content-type": "application/json" },
@@ -115,7 +115,7 @@ function InscriptionCorsus(props) {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
+        "http://localhost:3001/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);

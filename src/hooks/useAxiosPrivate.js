@@ -31,8 +31,6 @@ const useAxiosPrivate = () => {
                     const newAccessToken = await refresh(refreshTokenState);
                     prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                     return axiosPrivate(prevRequest);
-                }else if (error?.response?.status === 401) {
-                    dispatch(setLogout()); // Log out user if token refresh fails
                 }
                 return Promise.reject(error);
             }

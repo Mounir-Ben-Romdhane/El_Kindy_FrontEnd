@@ -56,9 +56,9 @@ const Index = () => {
                 {/* Dashboard menu */}
                 <div className="list-group list-group-dark list-group-borderless">
                   <Link
-                    className={`list-group-item ${activeNavItem === "/dashbordTeacher" ? "active" : ""}`}
-                    to="/dashbordTeacher"
-                    onClick={() => handleNavItemClick("/dashbordTeacher")}
+                    className={`list-group-item ${activeNavItem === "/dashboard-teacher" ? "active" : ""}`}
+                    to="/dashboard-teacher"
+                    onClick={() => handleNavItemClick("/dashboard-teacher")}
                   >
                     <i className="bi bi-ui-checks-grid fa-fw me-2" />
                     Dashboard
@@ -86,13 +86,15 @@ const Index = () => {
                     Messages
                   </Link>
 
-                  <a
-                    className="list-group-item"
-                    href="instructor-studentlist.html"
-                  >
+
+                  <Link 
+                  className={`list-group-item ${activeNavItem === "/StudentsGrades" ? "active" : ""}`}
+                  to="/StudentsGrades"
+                  onClick={() => handleNavItemClick("/StudentsGrades")}>
                     <i className="bi bi-people fa-fw me-2" />
-                    Students
-                  </a>
+                    Students Grades
+                  </Link>
+
 
                   <a
                     className="list-group-item"

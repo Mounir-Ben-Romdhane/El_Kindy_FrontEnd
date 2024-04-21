@@ -43,7 +43,7 @@ function Index() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://el-kindy-project-backend.onrender.com/api/categories', {
+        const response = await fetch('http://localhost:3001/api/categories', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ Categories START */}
                   <div className={`card card-body text-center position-relative btn-transition p-4 ${cardBackgroundClasses[index % cardBackgroundClasses.length]}`}>
                     <div className="icon-xl mx-auto rounded-circle mb-3">
                       <img className="icon-xl mx-auto rounded-circle mb-3"
-                        src={`https://el-kindy-project-backend.onrender.com/assets/${category.picturePath}`}
+                        src={`http://localhost:3001/assets/${category.picturePath}`}
                         alt={category.name}
                         style={{ width: '80%', height: '70px', maxWidth: '70px' }} // Ajuster selon les besoins
                       />

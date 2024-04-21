@@ -45,7 +45,7 @@ const handleRemoveImage = () => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(
-          `https://el-kindy-project-backend.onrender.com/event/events/${id}`
+          `http://localhost:3001/event/events/${id}`
         );
 
         const eventData = response.data;
@@ -57,7 +57,7 @@ const handleRemoveImage = () => {
           dateFin: formatDate(eventData.dateFin),
         });
         if (eventData.picturePath) { 
-          setPreviewImageUrl(`https://el-kindy-project-backend.onrender.com/assets/${eventData.picturePath}`);
+          setPreviewImageUrl(`http://localhost:3001/assets/${eventData.picturePath}`);
           setImageName(eventData.picturePath); 
         }
       } catch (error) {
@@ -98,7 +98,7 @@ const handleRemoveImage = () => {
     
     try {
       const response = await axios.patch(
-        `https://el-kindy-project-backend.onrender.com/event/update/${id}`,
+        ` http://localhost:3001/event/update/${id}`,
         formData,
         {
           headers: {
@@ -195,7 +195,7 @@ const handleRemoveImage = () => {
                       name="price"
                       value={formState.price}
                       onChange={handleEventChange}
-                      placeholder="Enter event price"
+                      placeholder={formState.price ? "Enter Event Price" : "Free Event"}
                     />
                   </div>
                   {/* Upload image START */}

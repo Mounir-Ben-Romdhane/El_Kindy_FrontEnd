@@ -20,15 +20,14 @@ function Index() {
   useEffect(() => {
     if (isAuth) {
       const userRoles = isAuth ? jwtDecode(isAuth).roles : []; 
-
         //console.log("userRole ",userRoles);
         if (userRoles.includes('admin') || userRoles.includes('superAdmin')) {
           navigate("/dashboard-admin");
         }else if (userRoles.includes('teacher') )  {
-          navigate('/dashbordTeacher');
+          navigate('/dashboard-teacher');
         }
          else if(userRoles.includes('parent') || userRoles.includes('student')){
-            navigate("/dashbordStudent");
+            navigate("/dashboard-student");
 
         }
     }
@@ -73,7 +72,7 @@ function Index() {
   const login = async (values, onSubmitProps) => {
     setOpen(true);
     try {
-      const loggedInResponse = await fetch("https://el-kindy-project-backend.onrender.com/auth/login", {
+      const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
         method: "POST",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify(values),
@@ -101,16 +100,17 @@ function Index() {
         const accessTokenn = loggedIn.accessToken;
         const userRoles = accessTokenn ? jwtDecode(accessTokenn).roles : []; 
 
+
         //console.log("userRole ",userRoles);
         if (userRoles.includes('admin') || userRoles.includes('superAdmin')) {
           navigate("/dashboard-admin"); 
 
         }else if (userRoles.includes('teacher')){
-          navigate('/dashbordTeacher');
+          navigate('/dashboard-teacher');
         } 
         else if (userRoles.includes('student') || userRoles.includes('parent')) {
 
-            navigate("/dashbordStudent");
+            navigate("/dashboard-student");
         }
 
       }

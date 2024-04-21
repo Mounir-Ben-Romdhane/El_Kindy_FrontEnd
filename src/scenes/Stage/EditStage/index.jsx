@@ -28,7 +28,7 @@ function EditStage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
+        const response = await fetch(`http://localhost:3001/stage/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +106,7 @@ function EditStage() {
     console.log("picture name", values.picture.name);
 
     const savedStageResponse = await fetch(
-      `https://el-kindy-project-backend.onrender.com/api/stage/${id}`,
+      `http://localhost:3001/api/stage/${id}`,
       {
         method: "PATCH",
         headers: {
@@ -144,17 +144,9 @@ function EditStage() {
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
-    //values.preventDefault();
-    // const formData = new FormData(values.target); // Create FormData object from form
-    // const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
-    // console.log("Values",formValues);
-    //await register(values, onSubmitProps);
-    //console.log("values",values);
-    //await addstage(values, onSubmitProps);
     values.preventDefault();
     const formData = new FormData(values.target); // Create FormData object from form
     const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
-    // console.log("Values",formValues);
     await updateStage(formValues, onSubmitProps);
   };
 
@@ -227,7 +219,7 @@ function EditStage() {
                             </div>
                           ) : <div>
                             <img
-                              src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
+                              src={`http://localhost:3001/assets/${stage.picturePath}`}
                               alt="Uploaded image"
                               className="img-fluid mb-2"
                               style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
@@ -272,23 +264,23 @@ function EditStage() {
 
                     {/* stage time */}
                     <div className="col-md-6">
-                      <label className="form-label">stage time</label>
+                      <label className="form-label">stage start Date</label>
                       <input
                         className="form-control"
                         type="date"
                         name="startDate"
-
+                        value={stage.startDate}
                         required
                       />                    </div>
 
                     {/* stage price */}
                     <div className="col-md-6">
-                      <label className="form-label">stage price</label>
+                      <label className="form-label">stage finish Date</label>
                       <input
                         className="form-control"
                         type="date"
                         name="finishDate"
-
+                        value={stage.finishDate}
                         required
                       />                  </div>
 

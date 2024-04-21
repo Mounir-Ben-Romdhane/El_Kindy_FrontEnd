@@ -32,8 +32,10 @@ const Conversation = ({ props,data, currentUser, online }) => {
 
     getUserData();
   }, [])
-  console.log("reciiiiver",reciiiiver);
-/*
+    console.log("userData",userData);
+   // console.log("currentChat",userData.reciiiiver);
+    console.log("reciiiiver",reciiiiver);
+  /*
 <BigChatBox
   chat={currentChat}
   currentUser={reciiiiver} 

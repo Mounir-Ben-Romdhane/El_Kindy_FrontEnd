@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import { Link } from 'react-router-dom';
-
+import Footer from "components/Footer";
+import NavBar from "components/NavBar";
 import SideBarTeacher from "components/SideBarTeacher";
 import { useSelector } from "react-redux";
 import TopBarTeacherStudent from "components/TopBarTeacherStudent";
@@ -33,8 +34,8 @@ const Room = () => {
 
   const myMeeting = (element) => {
     if (!meetingLoaded && decodeToken && decodeToken.fullName) {
-      const appID = 984376862;
-      const serverSecret = "7deae5e2a3a2361722b16d4867d0e1a3";
+      const appID = 601284725;
+      const serverSecret = "6407863a0afd45265fe09958043e1193";
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
         appID,
         serverSecret,
@@ -48,7 +49,7 @@ const Room = () => {
         sharedLinks: [
           {
             name: "copy Link",
-            url: `https://el-kindy.vercel.app/room/${roomId}`,
+            url: `http://localhost:3000/room/${roomId}`,
           },
         ],
         scenario: {
@@ -56,7 +57,7 @@ const Room = () => {
         },
         showScreenSharingButton: true,
       });
-      setMeetingLink(`https://el-kindy.vercel.app/room/${roomId}`);
+      setMeetingLink(`http://localhost:3000/room/${roomId}`);
       setMeetingLoaded(true);
     }
   };
@@ -82,7 +83,7 @@ const Room = () => {
       const startTimeDate = new Date(`2022-01-01T${popupData.startTime}:00Z`);
       const endTimeDate = new Date(`2022-01-01T${popupData.endTime}:00Z`);
 
-      const response = await fetch("https://el-kindy-project-backend.onrender.com/meeting/add", {
+      const response = await fetch("http://localhost:3001/meeting/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +131,7 @@ const Room = () => {
     // Fetch all inscriptions from your backend API
     const fetchInscriptions = async () => {
       try {
-        const response = await fetch("https://el-kindy-project-backend.onrender.com/inscription/all");
+        const response = await fetch("http://localhost:3001/inscription/all");
         if (response.ok) {
           const data = await response.json();
           setStudentsList(data.data);
@@ -149,7 +150,8 @@ const Room = () => {
   return (
     <div>
       {/* **************** MAIN CONTENT START **************** */}
-      <main>
+      <main>    <NavBar />
+
         {/* hedha l partie l fou9aneya  */}
         <TopBarTeacherStudent />
         {/* =======================
@@ -302,7 +304,7 @@ const Room = () => {
           </div>
         </section>
         {/* =======================
-  Page content END */}
+  Page content END */}<Footer />
       </main>
       {/* **************** MAIN CONTENT END **************** */}
     </div>

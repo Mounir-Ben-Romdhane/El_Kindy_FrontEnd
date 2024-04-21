@@ -60,7 +60,7 @@ const addCourse = async (values, onSubmitProps) => {
     console.log("picture name", values.picture.name);
     
     const savedCourseResponse = await fetch(
-        "https://el-kindy-project-backend.onrender.com/api/stage",
+        "http://localhost:3001/api/stage",
         {
             method: "POST",
             body: formData,

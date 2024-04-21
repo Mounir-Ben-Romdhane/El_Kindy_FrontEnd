@@ -5,14 +5,15 @@ import SideBarTeacher from 'components/SideBarTeacher';
 import TopBarTeacherStudent from 'components/TopBarTeacherStudent';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-
+import Footer from "components/Footer";
+import NavBar from "components/NavBar";
 const Index = () => {
 
     const [meetings, setMeetings] = useState([]);
     useEffect(() => {
         const fetchMeetings = async () => {
             try {
-                const response = await axios.get('https://el-kindy-project-backend.onrender.com/meeting/getAll');
+                const response = await axios.get('http://localhost:3001/meeting/getAll');
                 console.log('Réponse de l\'API :', response.data);
                 setMeetings(response.data.data);
             } catch (error) {
@@ -24,9 +25,10 @@ const Index = () => {
     }, []);
 
     return (
-        <>
+        <div>
             {/* **************** MAIN CONTENT START **************** */}
             <main>
+                <NavBar />
                 {/* hedha l partie l fou9aneya  */}
                 <TopBarTeacherStudent />
                 {/* =======================
@@ -89,9 +91,10 @@ const Index = () => {
                     </div>
                 </section>
                 {/* Page content END */}
+                <Footer />
             </main>
             {/* MAIN CONTENT END */}
-        </>
+        </div>
     );
 };
 

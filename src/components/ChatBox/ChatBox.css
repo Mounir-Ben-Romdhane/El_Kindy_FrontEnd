@@ -1,40 +1,53 @@
 .ChatBox-container {
     position: fixed;
-    background-image: url('../../../public/assets/images/bgchat.jpg'); /* Ajouter l'image de fond */
-    background-size: 100%; /* Ajuster la taille de l'image pour couvrir tout le conteneur */
-    background-position: center; /* Centrer l'image de fond */
+    background-image: url('../../../public/assets/images/bgchat.jpg');
+    background-size: 100%;
+    background-position: center;
     bottom: 0;
     right: 0;
     height: 60%;
-    overflow-y: scroll;
-    overflow-x: hidden; 
-    width: 350px;  /* Largeur de la boîte de chat */
-    border-radius: 8px 8px 0 0; /* Coins arrondis */
+    width: 100vw;
+    max-width: 350px; /* Adjust the maximum width for smaller screens */
+    border-radius: 8px 8px 0 0;
     padding: 0;
+    border: 1px solid #ccc; /* Add border line */
+
+}
+
+.chat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    flex-grow: 1;
+    max-height: calc(100% - 7rem); /* Subtract the height of the chat sender */
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 
 
-  
-/* Input-fixed */
 .input-fixed {
     position: fixed;
     bottom: 0;
     right: 0;
-    width: 24%;
+    width: 100vw;
+    max-width: 350px; /* Adjust the maximum width for smaller screens */
     background-color: white;
     z-index: 1000;
     padding: 1rem;
     display: flex;
     align-items: center;
+    border: 1px solid #ccc; /* Add border line */
+
 }
+
 
 .chat-header {
     padding: 1rem;
     display: flex;
     height: 60px;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
     border-bottom-left-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-
     flex-direction: column;
     background-color: rgb(236, 236, 236);
     position: sticky; /* Rend l'en-tête collant */
@@ -49,21 +62,8 @@
     background-color: white;
   }
   
-  .fixed-sender {
-    position: sticky;
-    bottom: 0;
-    background-color: white;
-    z-index: 1;
-    padding: 1rem;
-  }
 
-.chat-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    flex-grow: 1; /* Faire en sorte que la chat-body prenne tout l'espace disponible */
-}
+
 
 .message {
     padding: 0.7rem;
@@ -103,17 +103,19 @@
   }
   
 .message img {
-    max-width: 50%; /* Pour s'assurer que les images ne dépassent pas la largeur du conteneur */
+    max-width: 100%; /* Pour s'assurer que les images ne dépassent pas la largeur du conteneur */
     border-radius: 0.5rem; /* Ajouter un rayon de bordure si nécessaire */
 }
 
 .chat-sender {
     height: 3.5rem;
-    padding: 0.8rem;
-    border-radius: 1rem;
+    padding: 0.1rem;
+    border-bottom-left-radius:0.2rem ;
+    border-top-left-radius: 0.5rem;
     align-self: end;
     display: flex;
-    justify-content: space-between; /* Aligner les éléments aux extrémités */
+    justify-content: space-between;
+    max-width: 350px;
 }
 
 .chat-sender > div {
@@ -122,7 +124,10 @@
 }
 
 .chat-sender > input {
-    height: 70%;
+    height: auto; /* Set height to auto to allow the input field to expand vertically */
+    max-width: calc(100% - 60px); /* Réduire la largeur maximale pour laisser de la place pour le bouton + et le bouton d'envoi */
+    max-height: 4rem; /* Définir une hauteur maximale pour l'entrée */
+    overflow-y: auto;
     background-color: rgb(236, 236, 236);
     border-radius: 0.5rem;
     border: none;
@@ -130,7 +135,9 @@
     flex: 1;
     font-size: 14px;
     padding: 0px 15px 0px 15px;
+    margin-right: 0.5rem; /* Reduce the margin between input and button */
 }
+
 
 .chat-sender > div:nth-of-type(1) {
     background: rgb(0, 157, 255);
@@ -166,3 +173,14 @@
     color: #358ff9;
     font-size:larger;
 }
+@media (max-width: 768px) {
+    .ChatBox-container,.input-fixed  {
+        max-width: 65vw; /* Adjust the max-width for smaller screens */
+    }
+
+    .message img {
+        max-width: 35vw;
+        max-height: 25vw;
+    }
+    }
+  

@@ -59,7 +59,7 @@ function Index() {
     //console.log("values", values);
     setOpen(true);
     const resetPasswordResponse = await fetch(
-      `https://el-kindy-project-backend.onrender.com/auth/reset-password/${id}`,
+      `http://localhost:3001/auth/reset-password/${id}`,
       {
         method: "POST",
         headers: {

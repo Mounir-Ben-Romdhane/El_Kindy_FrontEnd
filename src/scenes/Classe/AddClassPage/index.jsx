@@ -28,7 +28,7 @@ const addClasses = async (values, onSubmitProps) => {
   console.log("values", values);
 
   const savedClassesResponse = await fetch(
-    "https://el-kindy-project-backend.onrender.com/salle",
+    "http://localhost:3001/salle",
     {
       method: "POST",
       headers: {

@@ -5,15 +5,22 @@ import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-notifications/lib/notifications.css";
-
-
 import { Link, useNavigate } from "react-router-dom";
 
 function AddEvent() {
+  const [isPaid, setIsPaid] = useState(false);
+const [isFree, setIsFree] = useState(false);
+
+  
+
   // State to hold the image name
   const [imageName, setImageName] = useState(null);
   // State to hold the image file
   const [imageFile, setImageFile] = useState(null);
+
+  const [place, setPlace] = useState(""); // New state for place
+  const [timeFrom, setTimeFrom] = useState(""); // New state for time from
+  const [timeTo, setTimeTo] = useState(""); // New state for time to
 
   // Function to handle selecting an image
   const handleImageSelect = (event) => {
@@ -48,7 +55,7 @@ function AddEvent() {
     console.log("formData", formData);
     console.log("picture name", values.picture.name);
 
-    const savedEventResponse = await fetch("https://el-kindy-project-backend.onrender.com/event/add", {
+    const savedEventResponse = await fetch("http://localhost:3001/event/add", {
       method: "POST",
       body: formData,
     });
@@ -77,9 +84,6 @@ function AddEvent() {
     await addEvent(formValues, onSubmitProps);
   };
 
- 
-
-
   return (
     <div>
       <SideBar />
@@ -90,7 +94,7 @@ function AddEvent() {
           <div className="page-content-wrapper border">
             <BannerStart
               title="Submit a New Event"
-              description="Read our 'Before you create an event' article before submitting!"
+              description="Submit new Event here!"
             />
             <div className="card bg-transparent border rounded-3 mt-4">
               <div className="card-header bg-light border-bottom px-lg-3">
@@ -138,7 +142,39 @@ function AddEvent() {
                       required
                     />
                   </div>
+
                   <div className="col-md-6">
+                    <label className="form-label">Time From</label>
+                    <input
+                      type="time"
+                      className="form-control"
+                      name="timeFrom"
+                      value={timeFrom}
+                      onChange={(e) => setTimeFrom(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Time To</label>
+                    <input
+                      type="time"
+                      className="form-control"
+                      name="timeTo"
+                      value={timeTo}
+                      onChange={(e) => setTimeTo(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Place</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="place"
+                      placeholder="Enter event place"
+                      value={place}
+                      onChange={(e) => setPlace(e.target.value)}
+                    />
+                  </div>
+                  {/*  <div className="col-md-6">
                     <label className="form-label">Event Price</label>
                     <input
                       type="number"
@@ -146,7 +182,52 @@ function AddEvent() {
                       name="price"
                       placeholder="Enter event price"
                     />
-                  </div>
+                  </div> */}
+
+<div className="col-md-6 event-price-container">
+  <label htmlFor="paidCheckbox" className="form-label">
+    Event Price
+  </label>
+  <div className="price-toggle">
+    <input
+      className="form-check-input"
+      type="checkbox"
+      id="paidCheckbox"
+      checked={isPaid}
+      onChange={() => {
+        setIsPaid(!isPaid);
+        setIsFree(false); // Uncheck the free option when paid is selected
+      }}
+    />
+    <label className="form-check-label" htmlFor="paidCheckbox">
+      Paid
+    </label>
+  </div>
+  {isPaid && (
+    <input
+      type="number"
+      className="form-control price-input"
+      name="price"
+      placeholder="Enter event price"
+    />
+  )}
+
+  <div className="price-toggle mt-2">
+    <input
+      className="form-check-input"
+      type="checkbox"
+      id="freeCheckbox"
+      checked={isFree}
+      onChange={() => {
+        setIsFree(!isFree);
+        setIsPaid(false); // Uncheck the paid option when free is selected
+      }}
+    />
+    <label className="form-check-label" htmlFor="freeCheckbox">
+      Free
+    </label>
+  </div>
+</div>
                   {/* Upload image START */}
                   <div className="m-4">
                     {/* Image */}
@@ -213,7 +294,6 @@ function AddEvent() {
                   <button
                     type="submit"
                     className="btn btn-success mb-2 mb-sm-0"
-                    
                   >
                     Submit Event
                   </button>

@@ -4,12 +4,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getInscription } from "services/inscriptionService/api";
 import axios from "axios";
+import useAxiosPrivate from "hooks/useAxiosPrivate";
 
 function Index() {
   const { id } = useParams();
   const [inscription, setInscription] = useState("");
   const [disponibilite, setDisponibilite] = useState([]);
   const navigate = useNavigate();
+  //refresh token
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,10 +30,16 @@ function Index() {
 
   const approveInscription = async (id) => {
     try {
-      const response = await axios.patch(
-        `https://el-kindy-project-backend.onrender.com/inscription/${id}/approve`
+      const response = await axiosPrivate.patch(
+        `/inscription/${id}/approve`
       );
-      navigate("/inscriptionsList");
+      if (response.status === 200) {
+        navigate("/inscriptionsList");
+      }else {
+        // Handle other response statuses here
+        const errorMessage = response.data.message; // Assuming there's an error message returned in the response data
+        alert(errorMessage); // Display the error message in an alert
+      }
     } catch (error) {
       console.error(error);
     }
@@ -38,14 +47,17 @@ function Index() {
 
   const rejectInscription = async (id) => {
     try {
-      const response = await axios.patch(
-        `https://el-kindy-project-backend.onrender.com/inscription/${id}/reject`
+      const response = await axiosPrivate.patch(
+        `/inscription/${id}/reject`
       );
-      navigate("/inscriptionsList");
+      if (response.status === 200) {
+        navigate("/inscriptionsList");
+      }
     } catch (error) {
       console.error(error);
     }
   };
+  
 
   return (
     <div>
@@ -174,29 +186,31 @@ function Index() {
                           </li>
                         </ul>
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "30px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <button
-                          className="btn btn-sm btn-success-soft"
-                          style={{ width: "120px" }}
-                          onClick={() => approveInscription(inscription._id)}
+                      {inscription.status === "pending" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "30px",
+                            marginTop: "10px",
+                          }}
                         >
-                          Approve
-                        </button>
-                        <button
-                          className="btn btn-sm btn-danger-soft"
-                          style={{ width: "120px" }}
-                          onClick={() => rejectInscription(inscription._id)}
-                        >
-                          Reject
-                        </button>
-                      </div>
+                          <button
+                            className="btn btn-sm btn-success-soft"
+                            style={{ width: "120px" }}
+                            onClick={() => approveInscription(inscription._id)}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger-soft"
+                            style={{ width: "120px" }}
+                            onClick={() => rejectInscription(inscription._id)}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {/* Information END */}
                   </div>
@@ -238,35 +252,42 @@ function Index() {
                           Available time
                         </h5>
                       </div>
-                        {/* Card body */}
-                        <div className="card-body p-0">
-                          <div className="d-sm-flex justify-content-between p-4">
-                            <ul>
-                              {/* Sort and arrange disponibilite to start with Monday */}
-                              {[...disponibilite]
-                                .sort((a, b) => {
-                                  // Sort by day first
-                                  const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-                                  const indexA = daysOrder.indexOf(a.day);
-                                  const indexB = daysOrder.indexOf(b.day);
-                                  if (indexA < indexB) return -1;
-                                  if (indexA > indexB) return 1;
-                                  // If days are the same, sort by start time
-                                  if (a.startTime < b.startTime) return -1;
-                                  if (a.startTime > b.startTime) return 1;
-                                  return 0;
-                                })
-                                .map((slot, index) => (
-                                  <li key={index}>
-                                    <span>{slot.day} : </span>
-                                    <span>{slot.startTime} --&gt; </span>
-                                    <span>{slot.endTime}</span>
-                                  </li>
-                                ))}
-                            </ul>
-                          </div>
+                      {/* Card body */}
+                      <div className="card-body p-0">
+                        <div className="d-sm-flex justify-content-between p-4">
+                          <ul>
+                            {/* Sort and arrange disponibilite to start with Monday */}
+                            {[...disponibilite]
+                              .sort((a, b) => {
+                                // Sort by day first
+                                const daysOrder = [
+                                  "Monday",
+                                  "Tuesday",
+                                  "Wednesday",
+                                  "Thursday",
+                                  "Friday",
+                                  "Saturday",
+                                  "Sunday",
+                                ];
+                                const indexA = daysOrder.indexOf(a.day);
+                                const indexB = daysOrder.indexOf(b.day);
+                                if (indexA < indexB) return -1;
+                                if (indexA > indexB) return 1;
+                                // If days are the same, sort by start time
+                                if (a.startTime < b.startTime) return -1;
+                                if (a.startTime > b.startTime) return 1;
+                                return 0;
+                              })
+                              .map((slot, index) => (
+                                <li key={index}>
+                                  <span>{slot.day} : </span>
+                                  <span>{slot.startTime} --&gt; </span>
+                                  <span>{slot.endTime}</span>
+                                </li>
+                              ))}
+                          </ul>
                         </div>
-
+                      </div>
                     </div>
                   </div>
                   {/* Enrolled END */}

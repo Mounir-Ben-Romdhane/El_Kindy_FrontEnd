@@ -21,7 +21,7 @@ const Chat = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [sendMessage, setSendMessage] = useState(null);
   const [receivedMessage, setReceivedMessage] = useState(null);
-  const [filteredChats, setFilteredChats] = useState([]);
+  const [filteredChats , setFilteredChats] = useState([]);
   const [thereciver, setreciiiiver] = useState(null);
   // Get the chat in chat section
   useEffect(() => {

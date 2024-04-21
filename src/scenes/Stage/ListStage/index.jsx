@@ -2,7 +2,6 @@ import SideBar from 'components/SideBar'
 import TopBarBack from 'components/TopBarBack'
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import BannerStartHome from "components/BannerStartHome";
 function Index() {
 
   const [stages, setStages] = useState([]);
@@ -14,7 +13,7 @@ function Index() {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const response = await fetch("https://el-kindy-project-backend.onrender.com/stage");
+        const response = await fetch("http://localhost:3001/stage");
         const { stages } = await response.json();
         setStages(stages);
         setTotalEntries(stages.length); // Update the totalEntries state
@@ -33,7 +32,7 @@ function Index() {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
+      await fetch(`http://localhost:3001/stage/${id}`, {
         method: 'DELETE',
       });
       // Filter out the deleted stage from the state
@@ -50,8 +49,7 @@ function Index() {
       {/* **************** MAIN CONTENT START **************** */}
       <main>
 
-
-        <SideBar />
+    <SideBar />
         {/* Page content START */}
         <div className="page-content">
           <TopBarBack />
@@ -133,7 +131,7 @@ function Index() {
                                 {/* Affichage de l'image */}
                                 {stage.picturePath ? (
                                   <img
-                                    src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
+                                    src={`http://localhost:3001/assets/${stage.picturePath}`}
                                     alt=""
                                     style={{ width: '30px', height: 'auto' }} // Adjust size as needed
                                   />

@@ -19,7 +19,7 @@ const HomePagee = () => {
     <div>
       {/* **************** MAIN CONTENT START **************** */}
       <main>
-
+<NavBar />
         {/* hedha l partie l fou9aneya  */}
         <TopBarTeacherStudent />
 
@@ -76,7 +76,7 @@ const HomePagee = () => {
 
 
 
-
+<Footer />
       </main>
       {/* **************** MAIN CONTENT END **************** */}
 

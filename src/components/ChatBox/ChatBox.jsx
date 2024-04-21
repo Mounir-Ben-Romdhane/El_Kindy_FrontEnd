@@ -40,27 +40,18 @@ const ChatBox = (props) => {
     }
   };
 
-  // Connect to Socket.io
-  useEffect(() => {
-    socket.current = io("ws://localhost:8800");
-    socket.current.emit("new-user-add", userId);
-    socket.current.on("get-users", (users) => {
-      setOnlineUsers(users);
-    });
-  }, []);
+const sendMessageToServer = () => {
+  const message = {
+    receiverId: props.receiverId,
+    chatId: props.keyy, // Assurez-vous d'utiliser la prop correcte pour chatId
+    senderId: userId,
+    text: newMessage,
+  };
 
-  // Send Message to socket server
-  useEffect(() => {
-    if (sendMessage!==null) {
-      socket.current.emit("send-message", sendMessage);}
-  }, [sendMessage]);
+  setSendMessage(message);
+};
 
-  // Get the message from socket server
-  useEffect(() => {
-    socket.current.on("recieve-message", (data) => {
-      setReceivedMessage(data);
-    });
-  }, []);
+  
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -84,7 +75,6 @@ const ChatBox = (props) => {
     }
   };
 
-  //scroll 2 last msg
   useEffect(() => {
     if (props.chat !== null && userData === null) {
       getUserData();
@@ -97,37 +87,62 @@ const ChatBox = (props) => {
     }
   }, [messages]);
 
+
+
+
   const handleSend = async () => {
     // Vérifier si le nouveau message n'est pas vide
     if (newMessage.trim() === "" && !picturePath) {
-      return; // Ne rien faire si le message est vide et qu'aucune image n'est sélectionnée
+      return;
     }
-
-    // Utiliser le chemin de l'image directement
+    
     const imagePath = picturePath ? URL.createObjectURL(picturePath) : null;
-
+    
     const formData = new FormData();
     formData.append("chatId", props.keyy);
     formData.append("senderId", props.currentUser);
     formData.append("text", newMessage);
-    formData.append("picturePath", imagePath); // Utiliser le chemin de l'image
-
+    formData.append("picturePath", imagePath);
+    
     try {
       const { data } = await addMessage(formData);
       setMessages([...messages, data]);
       setNewMessage("");
       setPicturePath(null);
+      setSendMessage(data); // Ajoutez cette ligne pour définir le message à envoyer
     } catch (error) {
       console.log(error);
     }
+    sendMessageToServer();
+      // Envoyer le message au serveur
+      socket.current.emit("send-message", messages);
+      setNewMessage(""); // Réinitialiser le champ de texte après l'envoi
+    
   };
 
+  //console.log("props",props.keyy);
 
+
+  // Add the received message to the messages array and update the state
   useEffect(() => {
-    if (receivedMessage && receivedMessage.chatId === props.keyy) {
-      setMessages([...messages, receivedMessage]);
+    if (socket.current) {
+      socket.current.on("receive-message", (receivedMessage) => {
+        // Vérifiez si le message reçu n'est pas déjà présent dans l'état
+        const isMessageAlreadyAdded = messages.find(message => message._id === receivedMessage._id);
+        if (!isMessageAlreadyAdded) {
+          setMessages(prevMessages => [...prevMessages, receivedMessage]);
+        }
+      });
+  
+      return () => {
+        if (socket.current) {
+          socket.current.off("receive-message");
+        }
+      };
     }
-  }, [receivedMessage]);
+  }, [props.keyy, messages]);
+  
+  
 
   const scroll = useRef();
   const imageRef = useRef();
@@ -136,9 +151,47 @@ const ChatBox = (props) => {
     const file = e.target.files[0];
     setPicturePath(file);
   };
+ // Connect to Socket.io
+ useEffect(() => {
+  socket.current = io("ws://localhost:8800");
+  //console.log("Connected to socket server");
+  socket.current.emit("new-user-add", userId);
+
+  socket.current.on("get-users", (users) => {
+    //console.log("Online Users:", users);
+    setOnlineUsers(users);
+  });
+}, []);
 
 
-  
+// Send Message to socket server
+useEffect(() => {
+ // console.log("Socket current state:", socket.current);
+  if (sendMessage !== null && socket.current) {
+ //   console.log("Sending message:", sendMessage);
+    socket.current.emit("send-message", sendMessage);
+  }
+}, [sendMessage]);
+
+// Get the message from socket server
+useEffect(() => {
+  if (socket.current) {
+    socket.current.on("receive-message", (message) => {
+ //     console.log("Message reçu:", message);
+      if (message.chatId === props.keyy) {
+        setMessages(prevMessages => [...prevMessages, message]);
+      }
+    });
+
+    return () => {
+      if (socket.current) {
+        socket.current.off("receive-message");
+      }
+    };
+  }
+}, [props.keyy]);
+//console.log("Messages actuels dans l'état:", messages);
+
   return (
     <>
       {isChatBoxOpen && (
@@ -179,6 +232,7 @@ const ChatBox = (props) => {
                 <div className="chat-body my-5">
                   {messages && messages.length > 0 ? (
                     messages.map((message) => (
+                      
                       <div
                         key={message._id}
                         className={`message ${message.senderId === props.currentUser
@@ -187,12 +241,13 @@ const ChatBox = (props) => {
                           }`}
                       >
                         <span>{message.text}</span>
-                        {message.picturePath && !message.text && (
-                          <div className="image-container">
-                            <img src={message.picturePath} alt="Uploaded" style={{ width: "200px", height: "100px" }} />
-                            <span className="message-time">{format(message.createdAt)}</span>
-                          </div>
-                        )}
+                      {message.picturePath && !message.text && (
+  <div className="image-container">
+    {/* Assurez-vous que message.picturePath contient l'URL complète accessible */}
+    <img src={message.picturePath} alt="Uploaded" style={{ width: "200px", height: "100px" }} />
+    <span className="message-time">{format(message.createdAt)}</span>
+  </div>
+)}
                         {!message.picturePath && (
                           <span className="message-time">{format(message.createdAt)}</span>
                         )}
@@ -212,7 +267,6 @@ const ChatBox = (props) => {
           </div>
 
           <div className="chat-sender input-fixed " style={{ padding: "0.8rem", borderTop: "1px solid #ccc" }}>
-            <h1>{props.key}</h1>
             <div onClick={() => imageRef.current.click()}>+</div>
             <InputEmoji value={newMessage} onChange={handleChange} onKeyDown={handleKeyDown} />
             {picturePath && (

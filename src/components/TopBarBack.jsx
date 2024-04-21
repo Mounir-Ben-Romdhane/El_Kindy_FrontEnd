@@ -18,7 +18,7 @@ function TopBarBack() {
     
     if (user && user.picturePath !== "" && !user.authSource === "local") {
       // If user has a custom picture path
-      return `https://el-kindy-project-backend.onrender.com/assets/${user.picturePath}`;
+      return `http://localhost:3001/assets/${user.picturePath}`;
     } else if (user && user.authSource === "local" && user.gender !== "") {
 
       // If user has no custom picture but has a gender
@@ -161,7 +161,7 @@ function TopBarBack() {
                           </div>
                           <div className="card-body p-0">
                             <ul className="list-group list-unstyled list-group-flush">
-                              {/* Notif item */}
+                              {/* Notif item
                               <li>
                                 <a
                                   href="#"
@@ -186,83 +186,7 @@ function TopBarBack() {
                                   </div>
                                 </a>
                               </li>
-                              {/* Notif item */}
-                              <li>
-                                <a
-                                  href="#"
-                                  className="list-group-item-action border-0 border-bottom d-flex p-3"
-                                >
-                                  <div className="me-3">
-                                    <div className="avatar avatar-md">
-                                      <img
-                                        className="avatar-img rounded-circle"
-                                        src="/assets/images/avatar/02.jpg"
-                                        alt="avatar"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h6 className="mb-1">
-                                      Larry Lawson Added a new course
-                                    </h6>
-                                    <p className="small text-body m-0">
-                                      What's new! Find out about new features
-                                    </p>
-                                    <u className="small">View detail</u>
-                                  </div>
-                                </a>
-                              </li>
-                              {/* Notif item */}
-                              <li>
-                                <a
-                                  href="#"
-                                  className="list-group-item-action border-0 border-bottom d-flex p-3"
-                                >
-                                  <div className="me-3">
-                                    <div className="avatar avatar-md">
-                                      <img
-                                        className="avatar-img rounded-circle"
-                                        src="/assets/images/avatar/05.jpg"
-                                        alt="avatar"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h6 className="mb-1">
-                                      New request to apply for Instructor
-                                    </h6>
-                                    <u className="small">View detail</u>
-                                  </div>
-                                </a>
-                              </li>
-                              {/* Notif item */}
-                              <li>
-                                <a
-                                  href="#"
-                                  className="list-group-item-action border-0 border-bottom d-flex p-3"
-                                >
-                                  <div className="me-3">
-                                    <div className="avatar avatar-md">
-                                      <img
-                                        className="avatar-img rounded-circle"
-                                        src="/assets/images/avatar/03.jpg"
-                                        alt="avatar"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <h6 className="mb-1">
-                                      Update v2.3 completed successfully
-                                    </h6>
-                                    <p className="small text-body m-0">
-                                      What's new! Find out about new features
-                                    </p>
-                                    <small className="text-body">
-                                      5 min ago
-                                    </small>
-                                  </div>
-                                </a>
-                              </li>
+                               */}
                             </ul>
                           </div>
                           {/* Button */}

@@ -22,7 +22,7 @@ const GoogleAuth = () => {
     try {
       //console.log("Logging in...", values);
       const loggedInResponse = await fetch(
-        "https://el-kindy-project-backend.onrender.com/auth/googleAuth",
+        "http://localhost:3001/auth/googleAuth",
         {
           method: "POST",
           headers: { "Content-type": "application/json" },

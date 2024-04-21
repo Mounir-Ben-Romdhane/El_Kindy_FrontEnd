@@ -7,57 +7,52 @@ import SideBar from "components/SideBar";
 import TopBarBack from "components/TopBarBack";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2"; // Importez SweetAlert2
+import useAxiosPrivate from "hooks/useAxiosPrivate";
 
 function Index() {
   const [inscription, setInscription] = useState([]);
+    //refresh token
+    const axiosPrivate = useAxiosPrivate();
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch("https://el-kindy-project-backend.onrender.com/inscription/all", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setInscription(data.data);
-      } else {
-        const errorMessage = await response.text();
-        //dispatch(setLogout()); // Log out user if token refresh fails
-        throw new Error(errorMessage);
+    const fetchData = async () => {
+      try {
+        const response = await axiosPrivate.get("/inscription/all");
+        if (response.status === 200) {
+          setInscription(response.data.data);
+        } else {
+          throw new Error("Failed to fetch inscriptions");
+        }
+      } catch (error) {
+        console.error("Error fetching inscriptions:", error);
+        // Handle error
       }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      // Handle error
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleDelete = async (id) => {
-    try {
-      await fetch(`https://el-kindy-project-backend.onrender.com/inscription/delete/${id}`, {
-        method: "DELETE",
-      });
-
-      toast.success("Inscription deleted successfully !!", {
-        autoClose: 1500,
-        style: {
-          color: "green", // Text color
-        },
-      });
-      setInscription((prevStages) =>
-        prevStages.filter((inscription) => inscription._id !== id)
-      ); // Assuming `_id` is the unique identifier
-    } catch (error) {
-      console.error("Error deleting stage:", error);
-    }
-  };
-
+    };
   
+    useEffect(() => {
+      fetchData();
+    }, []);
+  
+    const handleDelete = async (id) => {
+      try {
+        const response = await axiosPrivate.delete(`/inscription/delete/${id}`);
+  
+        if (response.status === 200) {
+          toast.success("Inscription deleted successfully !!", {
+            autoClose: 1500,
+            style: {
+              color: "green", // Text color
+            },
+          });
+          setInscription((prevInscriptions) =>
+            prevInscriptions.filter((inscription) => inscription._id !== id)
+          ); // Assuming `_id` is the unique identifier
+        } else {
+          throw new Error("Failed to delete inscription");
+        }
+      } catch (error) {
+        console.error("Error deleting inscription:", error);
+      }
+    };
 
   return (
     <div>

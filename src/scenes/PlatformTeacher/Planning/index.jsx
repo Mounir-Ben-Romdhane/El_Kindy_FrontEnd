@@ -3,7 +3,6 @@ import axios from "axios";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import Modal from "./Modal";
 import { useSelector } from "react-redux"; // Importez useSelector depuis React Redux
 import Footer from "components/Footer";
 import NavBar from "components/NavBar";
@@ -11,6 +10,7 @@ import TopBarTeacherStudent from "components/TopBarTeacherStudent";
 import SideBarTeacher from "components/SideBarTeacher";
 // Importez jwtDecode pour décoder le jeton d'accès
 import { jwtDecode } from "jwt-decode";
+import EventDetailsModal from './EventDetailsModal';
 
 const localizer = momentLocalizer(moment);
 
@@ -23,14 +23,32 @@ const MyCalendar = () => {
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [classes, setClasses] = useState({ data: [] });
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const accessToken = useSelector((state) => state.accessToken); // Récupérez le jeton d'accès du store Redux
   const decodeToken = accessToken ? jwtDecode(accessToken) : "";
-
+  const handleEventClick = async (event) => {
+    console.log("handleEventClick called with event:", event);
+    try {
+      const response = await axios.get(`http://localhost:3001/planning/${event.id}/details`);
+      const courseDetails = response.data;
+      
+      setSelectedEvent(courseDetails);
+      setShowModal(true); // Add this line
+      console.log("showModal set to true");
+      
+    } catch (error) {
+      console.error("Erreur lors de la récupération des détails du cours", error);
+    }
+  };
+  
+  
   // Utilisez le jeton d'accès dans vos requêtes HTTP
   useEffect(() => {
     const fetchPlannings = async () => {
       try {
-        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/teacher/${decodeToken.id}`, {
+        const response = await axios.get(`http://localhost:3001/planning/teacher/${decodeToken.id}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },
@@ -59,7 +77,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("https://el-kindy-project-backend.onrender.com/salle")
+      .get("http://localhost:3001/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -67,7 +85,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the rooms", error);
       });
       axios
-      .get("https://el-kindy-project-backend.onrender.com/course/all")
+      .get("http://localhost:3001/course/all")
       .then((response) => {
         setCourses(response.data);
         console.log(response.data);
@@ -75,9 +93,17 @@ const MyCalendar = () => {
       .catch((error) => {
         console.error("There was an error fetching the courses", error);
       });
-  
+      axios
+      .get("http://localhost:3001/classes/getAll") // Récupérez la liste des cours
+      .then((response) => {
+        setClasses(response.data); // Stockez les cours dans l'état
+        console.log("claaassssss",response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the courses", error);
+      });
     axios
-      .get("https://el-kindy-project-backend.onrender.com/auth/teachers")
+      .get("http://localhost:3001/auth/teachers")
       .then((response) => {
         setTeachers(response.data);
       })
@@ -86,7 +112,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("https://el-kindy-project-backend.onrender.com/auth/students")
+      .get("http://localhost:3001/auth/students")
       .then((response) => {
         setStudents(response.data);
       })
@@ -98,7 +124,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("https://el-kindy-project-backend.onrender.com/salle")
+      .get("http://localhost:3001/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -107,7 +133,7 @@ const MyCalendar = () => {
       });
 
       axios
-      .get("https://el-kindy-project-backend.onrender.com/course/all")
+      .get("http://localhost:3001/course/all")
       .then((response) => {
         setCourses(response.data);
       })
@@ -152,20 +178,31 @@ const MyCalendar = () => {
   const MyEvent = ({ event }) => {
     const teacher = teachers.find((t) => t._id === event.teacherId);
     const student = students.find((s) => s._id === event.studentId);
-    const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : "Enseignant inconnu";
-    const studentName = student ? `${student.firstName} ${student.lastName}` : "Étudiant inconnu";
-
+    const classe = Array.isArray(classes) ? classes.find((s) => s._id === event.classId) : null;
+ 
+    // Les noms des enseignants et des étudiants sont disponibles, construisez le composant avec les noms
+    const studentName = student ? `${student.firstName} ${student.lastName}` : "";
+    const displayStudent = event.studentId && studentName ? `Student: ${studentName}` : "";
+ 
+    // Afficher "Teacher :" si l'enseignant est sélectionné, sinon afficher "Student :"
+    const displayLabel = event.teacherId ? "Teacher :" : "Student :";
+ 
+    // Afficher "Classe :" uniquement lorsque l'étudiant est sélectionné et que la classe est disponible
+    const displayClass = event.classId ? `Classe: ${event.classId.className}` : "";
     return (
       <div>
-        <strong>{event.title}</strong>
-        <div>Teacher: {teacherName}</div>
-        <div>Student: {studentName}</div>
+          <strong>{event.title}</strong>
+  
+       
       </div>
-    );
-  };
+  );
+};
+
 
   return (
-    <>
+    <div>
+      <main>
+        <NavBar />
         <TopBarTeacherStudent />
         <section className="pt-0">
           <div className="container">
@@ -178,46 +215,51 @@ const MyCalendar = () => {
                       <div>
                         <div className="mb-3 d-sm-flex justify-content-sm-between">
                           <div>
-                            <Calendar
-                              components={{
-                                event: MyEvent,
-                              }}
-                              key={events.length}
-                              localizer={localizer}
-                              events={events}
-                              onSelectSlot={handleSelectSlot}
-                              selectable={false}
-                              resourceIdAccessor="resourceId"
-                              resourceTitleAccessor="resourceTitle"
-                              defaultView="day"
-                              min={new Date(0, 0, 0, 9, 0)}
-                              max={new Date(0, 0, 0, 21, 0)}
-                              step={30}
-                              timeslots={1}
-                              views={{ month: false, week: false, day: true }}
-                              resources={rooms.map((room) => ({
-                                resourceId: room._id,
-                                resourceTitle: room.name,
-                              }))}
-                              startAccessor="start"
-                              endAccessor="end"
-                              style={{ height: "100%", width: "70%" }}
-                              formats={formats}
-                              eventPropGetter={(event) => ({
-                                style: { backgroundColor: event.color },
-                              })}
-                            />
-                            {showModal && (
-                              <Modal
-                                onClose={() => setShowModal(false)}
-                                onSave={addNewEvent}
-                                eventDetails={selectedEvent}
-                                rooms={rooms}
-                                courses={courses}
-                                teachers={teachers}
-                                students={students}
-                              />
-                            )}
+                          <Calendar
+  components={{
+    event: MyEvent,
+  }}
+  key={events.length}
+  onSelectEvent={handleEventClick}
+  localizer={localizer}
+  events={events}
+  selectable={true}
+
+  onSelectSlot={handleSelectSlot}
+  resourceIdAccessor="resourceId"
+  resourceTitleAccessor="resourceTitle"
+  defaultView="day"
+  min={new Date(0, 0, 0, 9, 0)}
+  max={new Date(0, 0, 0, 21, 0)}
+  step={30}
+  timeslots={1}
+  views={{ month: false, week: false, day: true }}
+  resources={rooms.map((room) => ({
+    resourceId: room._id,
+    resourceTitle: room.name,
+  }))}
+  startAccessor="start"
+  endAccessor="end"
+  style={{ height: '700px', width: "68%"  }} // Augmentez la hauteur du calendrier pour afficher plus de cases
+  formats={formats}
+  eventPropGetter={(event) => ({
+    style: { backgroundColor: event.color },
+  })}
+/>
+
+{showModal && (
+  <EventDetailsModal
+    onClose={() => setShowModal(false)}
+    event={selectedEvent}
+    roomId={selectedEvent.resourceId}
+    rooms={rooms}
+  />
+)}
+
+     
+
+
+                            
                           </div>
                         </div>
                         <div className="text-end"></div>
@@ -231,10 +273,10 @@ const MyCalendar = () => {
             </div>
           </div>
         </section>
-    </>
+        <Footer />
+      </main>
+    </div>
   );
 };
 
 export default MyCalendar;
-
-

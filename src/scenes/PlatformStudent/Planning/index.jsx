@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -13,6 +11,7 @@ import useAxiosPrivate from "hooks/useAxiosPrivate";
 import Footer from "components/Footer";
 import { useSelector } from "react-redux"; // Importez useSelector depuis React Redux
 import { jwtDecode } from "jwt-decode";
+import EventDetailsModal from './EventDetailsModal';
 
 const localizer = momentLocalizer(moment);
 const MyCalendar = () => {
@@ -32,12 +31,27 @@ const MyCalendar = () => {
 
   const accessToken = useSelector((state) => state.accessToken); // Récupérez le jeton d'accès du store Redux
   const decodeToken = accessToken ? jwtDecode(accessToken) : "";
-
+  const handleEventClick = async (event) => {
+    console.log("handleEventClick called with event:", event);
+    try {
+      const response = await axios.get(`http://localhost:3001/planning/${event.id}/details`);
+      const courseDetails = response.data;
+      
+      setSelectedEvent(courseDetails);
+      setShowModal(true); // Add this line
+      console.log("showModal set to true");
+      
+    } catch (error) {
+      console.error("Erreur lors de la récupération des détails du cours", error);
+    }
+  };
+  
+  
   // Utilisez le jeton d'accès dans vos requêtes HTTP
   useEffect(() => {
     const fetchPlannings = async () => {
       try {
-        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/student/${decodeToken.id}`, {
+        const response = await axios.get(`http://localhost:3001/planning/student/${decodeToken.id}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },
@@ -66,7 +80,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("https://el-kindy-project-backend.onrender.com/salle")
+      .get("http://localhost:3001/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -74,7 +88,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the rooms", error);
       });
       axios
-      .get("https://el-kindy-project-backend.onrender.com/course/all")
+      .get("http://localhost:3001/course/all")
       .then((response) => {
         setCourses(response.data);
         console.log(response.data);
@@ -84,7 +98,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("https://el-kindy-project-backend.onrender.com/auth/teachers")
+      .get("http://localhost:3001/auth/teachers")
       .then((response) => {
         setTeachers(response.data);
       })
@@ -93,7 +107,7 @@ const MyCalendar = () => {
       });
   
     axios
-      .get("https://el-kindy-project-backend.onrender.com/auth/students")
+      .get("http://localhost:3001/auth/students")
       .then((response) => {
         setStudents(response.data);
       })
@@ -105,7 +119,7 @@ const MyCalendar = () => {
 
   useEffect(() => {
     axios
-      .get("https://el-kindy-project-backend.onrender.com/salle")
+      .get("http://localhost:3001/salle")
       .then((response) => {
         setRooms(response.data);
       })
@@ -114,7 +128,7 @@ const MyCalendar = () => {
       });
 
       axios
-      .get("https://el-kindy-project-backend.onrender.com/course/all")
+      .get("http://localhost:3001/course/all")
       .then((response) => {
         setCourses(response.data);
       })
@@ -159,14 +173,12 @@ const MyCalendar = () => {
   const MyEvent = ({ event }) => {
     const teacher = teachers.find((t) => t._id === event.teacherId);
     const student = students.find((s) => s._id === event.studentId);
-    const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : "Enseignant inconnu";
-    const studentName = student ? `${student.firstName} ${student.lastName}` : "Étudiant inconnu";
+    {/*const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}`: "Enseignant inconnu";*/}
 
     return (
       <div>
         <strong>{event.title}</strong>
-        <div>Teacher: {teacherName}</div>
-        <div>Student: {studentName}</div>
+        {/*<div>Teacher: {teacherName}</div>*/}
       </div>
     );
   };
@@ -174,6 +186,8 @@ const MyCalendar = () => {
   return (
     <div>
       <main>
+      <NavBar />
+
         <TopBarTeacherStudent />
         <section className="pt-0">
           <div className="container">
@@ -190,11 +204,13 @@ const MyCalendar = () => {
                               components={{
                                 event: MyEvent,
                               }}
+                              onSelectEvent={handleEventClick}
+                              selectable={true}
+
                               key={events.length}
                               localizer={localizer}
                               events={events}
                               onSelectSlot={handleSelectSlot}
-                              selectable={false}
                               resourceIdAccessor="resourceId"
                               resourceTitleAccessor="resourceTitle"
                               defaultView="day"
@@ -209,23 +225,24 @@ const MyCalendar = () => {
                               }))}
                               startAccessor="start"
                               endAccessor="end"
-                              style={{ height: "100%", width: "70%" }}
-                              formats={formats}
+                              dayLayoutAlgorithm={'overlap'} // Ajustez la taille des cases en fonction des événements qui se chevauchent
+                              style={{ height: '700px', width: "70%"  }} // Augmentez la hauteur du calendrier pour afficher plus de cases
+                                                        formats={formats}
                               eventPropGetter={(event) => ({
                                 style: { backgroundColor: event.color },
                               })}
                             />
-                            {showModal && (
-                              <Modal
-                                onClose={() => setShowModal(false)}
-                                onSave={addNewEvent}
-                                eventDetails={selectedEvent}
-                                rooms={rooms}
-                                courses={courses}
-                                teachers={teachers}
-                                students={students}
-                              />
-                            )}
+                           {console.log("Selected Event:", selectedEvent)}
+                           {showModal && (
+  <EventDetailsModal
+    onClose={() => setShowModal(false)}
+    event={selectedEvent}
+    roomId={selectedEvent.resourceId}
+    rooms={rooms}
+  />
+)}
+
+
                           </div>
                         </div>
                         <div className="text-end"></div>
@@ -239,11 +256,11 @@ const MyCalendar = () => {
             </div>
           </div>
         </section>
+        <Footer />
+
       </main>
     </div>
   );
 };
 
 export default MyCalendar;
-
-
