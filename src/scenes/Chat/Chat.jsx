@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import NavBar from "components/NavBar";
 import { jwtDecode } from "jwt-decode"; // Import jwt-decode library
+import useAxiosPrivate from "hooks/useAxiosPrivate";
 
 const Chat = () => {
   const dispatch = useDispatch();
@@ -23,11 +24,15 @@ const Chat = () => {
   const [receivedMessage, setReceivedMessage] = useState(null);
   const [filteredChats , setFilteredChats] = useState([]);
   const [thereciver, setreciiiiver] = useState(null);
+
+  const axiosPrivate = useAxiosPrivate();
+
+
   // Get the chat in chat section
   useEffect(() => {
     const getChats = async () => {
       try {
-        const { data } = await userChats(userId);
+        const { data } = await userChats(userId, axiosPrivate);
         setChats(data);
         setFilteredChats(data); // Initialize filtered chats with all chats
       } catch (error) {

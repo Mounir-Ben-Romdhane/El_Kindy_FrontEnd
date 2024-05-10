@@ -1,5 +1,5 @@
 import axios from 'axios';
-const BASE_URL = 'https://el-kindy-project-backend.onrender.com';
+export const BASE_URL = 'https://el-kindy-project-backend.onrender.com';
 
 export default axios.create({
     baseURL: BASE_URL

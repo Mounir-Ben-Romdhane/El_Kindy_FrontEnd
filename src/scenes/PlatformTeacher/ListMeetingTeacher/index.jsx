@@ -1,21 +1,23 @@
-// Importez React et useState, useEffect depuis 'react'
 import React, { useEffect, useState } from 'react';
-// Importez les composants nécessaires
 import SideBarTeacher from 'components/SideBarTeacher';
 import TopBarTeacherStudent from 'components/TopBarTeacherStudent';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Footer from "components/Footer";
 import NavBar from "components/NavBar";
-const Index = () => {
 
+const Index = () => {
     const [meetings, setMeetings] = useState([]);
+
     useEffect(() => {
         const fetchMeetings = async () => {
             try {
                 const response = await axios.get('https://el-kindy-project-backend.onrender.com/meeting/getAll');
                 console.log('Réponse de l\'API :', response.data);
-                setMeetings(response.data.data);
+                // Filtrer les réunions à partir de la date système
+                const currentDate = new Date().toISOString().split('T')[0];
+                const filteredMeetings = response.data.data.filter(meeting => meeting.date >= currentDate);
+                setMeetings(filteredMeetings);
             } catch (error) {
                 console.error('Erreur lors de la récupération des réunions :', error);
             }
@@ -29,7 +31,6 @@ const Index = () => {
             {/* **************** MAIN CONTENT START **************** */}
             <main>
                 <NavBar />
-                {/* hedha l partie l fou9aneya  */}
                 <TopBarTeacherStudent />
                 {/* =======================
                     Page content START */}
@@ -37,56 +38,34 @@ const Index = () => {
                     <div className="container">
                         <div className="row">
                             <SideBarTeacher />
-                            {/* Main content START */}
                             <div className="col-xl-9">
-                                {/* Meeting list START */}
-                                <div className="card border bg-transparent rounded-3">
-                                    {/* Header START */}
-                                    <div className="card-header bg-transparent border-bottom">
-                                        <div className="row justify-content-between align-middle">
-                                            {/* Title */}
-                                            <div className="col-sm-6">
-                                                <h3 className="card-header-title mb-2 mb-sm-0">List Meeting</h3>
-                                            </div>
-                                            {/* Short by filter */}
-                                            <div className="col-sm-4">
-                                                <form>
-                                                    <select className="form-select js-choice z-index-9 bg-white" aria-label=".form-select-sm">
-                                                        <option value>Sort by date</option>
-                                                        <option>★★★★★ (5/5)</option>
-                                                        <option>★★★★☆ (4/5)</option>
-                                                        <option>★★★☆☆ (3/5)</option>
-                                                        <option>★★☆☆☆ (2/5)</option>
-                                                        <option>★☆☆☆☆ (1/5)</option>
-                                                    </select>
-                                                </form>
+                                <div className="card border-2 bg-transparent rounded-3">
+                                    <div className="card card-body shadow h-100 d-flex justify-content-center align-items-center  ">
+                                        <div className="card-header bg-transparent border-bottom">
+                                            <div className="row justify-content-between align-middle">
+                                                <div className="col-sm-12">
+                                                    <h3 className="card-header-title mb-2 mb-sm-0">List Meeting</h3>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    {/* Header END */}
-                                    {/* Meetings START */}
-                                    <div className="card-body mt-2 mt-sm-4">
-                                        {meetings.map((meeting, index) => (
-                                            <div key={meeting._id} className="meeting-item">
-                                                <h5 className="mb-1">{meeting.title}</h5>
-                                                <p className="text-muted mb-2">{meeting.description}</p>
-                                                <div className="meeting-details">
-                                                    <p><strong>Date:</strong> {meeting.date}</p>
-                                                    <p><strong>Heure de début:</strong> {meeting.startTime}</p>
-                                                    <p><strong>Heure de fin:</strong> {meeting.endTime}</p>
-                                                    <p><strong>Lien:</strong>  <Link to={meeting.meetingLink}>{meeting.meetingLink}</Link></p>
+                                        <ul className="list-group list-group-borderless small mt-2">
+                                            {meetings.map((meeting, index) => (
+                                                <div key={meeting._id} className="meeting-item">
+                                                    <h5 className="mb-1">{meeting.title}</h5>
+                                                    <p className="text-muted mb-2">{meeting.description}</p>
+                                                    <div className="meeting-details">
+                                                        <li className="list-group-item text-body pb-0"> <i className="bi bi-patch-check-fill text-success" /><strong>Date:</strong> {meeting.date}</li>
+                                                        <li className="list-group-item text-body pb-0"> <i className="bi bi-patch-check-fill text-success" /><strong>Heure de début:</strong> {meeting.startTime}</li>
+                                                        <li className="list-group-item text-body pb-0"> <i className="bi bi-patch-check-fill text-success" /><strong>Heure de fin:</strong> {meeting.endTime}</li>
+                                                        <li className="list-group-item text-body pb-0"> <i className="bi bi-patch-check-fill text-success" /><strong>Lien:</strong>  <Link to={meeting.meetingLink}>{meeting.meetingLink}</Link></li>
+                                                    </div>
+                                                    {index !== meetings.length - 1 && <hr />}
                                                 </div>
-                                                {/* Ajouter une séparation sauf pour le dernier élément */}
-                                                {index !== meetings.length - 1 && <hr />}
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </ul>
                                     </div>
-                                    {/* Meetings END */}
-
                                 </div>
-                                {/* Meeting list END */}
                             </div>
-                            {/* Main content END */}
                         </div>
                     </div>
                 </section>

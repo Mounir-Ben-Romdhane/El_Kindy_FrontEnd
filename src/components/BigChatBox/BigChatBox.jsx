@@ -68,7 +68,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const { data } = await getMessages(props.keyy);
+        const { data } = await getMessages(props.keyy, axiosPrivate);
         setMessages(data);
       } catch (error) {
         console.log(error);
@@ -125,7 +125,7 @@ useEffect(() => {
     formData.append("picturePath", imagePath); // Utiliser le chemin de l'image
 
     try {
-      const { data } = await addMessage(formData);
+      const { data } = await addMessage(formData, axiosPrivate);
       setMessages([...messages, data]);
       setNewMessage("");
       setPicturePath(null);

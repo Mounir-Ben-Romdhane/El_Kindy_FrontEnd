@@ -6,46 +6,48 @@ import 'react-confirm-alert/src/react-confirm-alert.css'; // Importez les styles
 import SideBar from "components/SideBar";
 import TopBarBack from "components/TopBarBack";
 import Swal from 'sweetalert2'; // Importez SweetAlert2
+import Backdrop from "@mui/material/Backdrop";
+import GridLoader from "react-spinners/GridLoader";
+import NoData from "components/NoData";
+import useAxiosPrivate from "hooks/useAxiosPrivate";
 const MySwal = withReactContent(Swal);
 
 function Index() {
   const [classes, setClasses] = useState([]);
   const [sortOption, setSortOption] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [itemsPerPage] = useState(8);
+  let [color, setColor] = useState("#399ebf");
+  const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const axiosPrivate = useAxiosPrivate();
+
   useEffect(() => {
     // Fonction pour récupérer les catégories
-    const fetchClasses = async () => {
-      try {
-        const response = await fetch("https://el-kindy-project-backend.onrender.com/salle", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-
-        if (data) {
-          setClasses(data); // Stocke les catégories dans l'état
-          console.log("classes", data);
-        }
-      } catch (error) {
-        console.error("Error fetching classes:", error);
-      }
-    };
+     
     fetchClasses();
   }, []);
+
   const fetchClasses = async () => {
+    setOpen(true);
     try {
-      const response = await axios.get("https://el-kindy-project-backend.onrender.com/salle");
+      const response = await axiosPrivate.get("/salle");
       setClasses(response.data);
+      setTotalEntries(response.data.length); // Update the totalEntries state
+      setOpen(false);
+      console.log("Total Entries:", response.data.length);
+
     } catch (error) {
+      setOpen(false);
       console.error("Error fetching classes:", error);
     }
   };
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
-
+ 
 
   const handleDeleteClasses = (classeId) => {
     MySwal.fire({
@@ -65,7 +67,7 @@ function Index() {
 
   const deleteClasses = async (classeId) => {
     try {
-      await axios.delete(`https://el-kindy-project-backend.onrender.com/salle/${classeId}`);
+      await axiosPrivate.delete(`/salle/${classeId}`);
       fetchClasses(); // Re-fetch categories to update the list after deletion
       MySwal.fire(
         'Supprimé!',
@@ -81,23 +83,42 @@ function Index() {
       )
     }
   };
+ 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
-  useEffect(() => {
-    // Appeler la fonction de tri lorsque sortOption change
-    handleSort();
-  }, [sortOption]);
+  const filteredClasses = classes.filter((classe) => {
+    return [
+      classe.name.toLowerCase(),
+      classe.status.toLowerCase(),
+      classe.capacity.toString().toLowerCase(), // Convert capacity to string and include it in search
+    ].some((text) => text.includes(searchQuery.toLowerCase()));
+  });
+  
 
-  // Fonction pour trier les classes
-const handleSort = () => {
-  const sortedClasses = [...classes];
-  if (sortOption === "asc") {
-    sortedClasses.sort((a, b) => (a.name && b.name) ? a.name.localeCompare(b.name) : 0);
-  } else if (sortOption === "desc") {
-    sortedClasses.sort((a, b) => (a.name && b.name) ? b.name.localeCompare(a.name) : 0);
+const sortedClasses = filteredClasses.sort((a, b) => {
+  if (sortOption === "Newest") {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  } else if (sortOption === "Oldest") {
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  } else if (sortOption === "A-Z") {
+    return a.name.localeCompare(b.name);
+  } else if (sortOption === "Z-A") {
+    return b.name.localeCompare(a.name);
   }
-  setClasses(sortedClasses);
-};
+  return 0;
+});
+  
 
+  // Get the current page of classes to display
+  const indexOfLastClass = currentPage * itemsPerPage;
+  const indexOfFirstClass = indexOfLastClass - itemsPerPage;
+  const currentClasses = sortedClasses.slice(indexOfFirstClass, indexOfLastClass);
+
+  const totalClasses = sortedClasses.length;
+  const totalPages = Math.ceil(totalClasses / itemsPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div>
@@ -107,19 +128,27 @@ const handleSort = () => {
         {/* Page content START */}
         <div className="page-content">
           <TopBarBack />
-
-          {/* Page main content START */}
+          {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
+          ) :
           <div className="page-content-wrapper border">
             {/* Title */}
             <div className="row mb-3">
               <div className="col-12 d-sm-flex justify-content-between align-items-center">
                 <h1 className="h3 mb-2 mb-sm-0">class</h1>
-                <Link to="/add-classe" className="btn btn-sm btn-primary me-1 mb-1 mb-md-0">Ajouter une salle</Link>
+                <Link to="/add-classe" className="btn btn-sm btn-primary me-1 mb-1 mb-md-0">Add class</Link>
 
               </div>
             </div>
 
-            {/* Card START */}
+            {classes.length === 0 ? (
+                <NoData />
+              ) : (
             <div className="card bg-transparent border">
               {/* Card header START */}
               <div className="card-header bg-light border-bottom">
@@ -132,31 +161,35 @@ const handleSort = () => {
                         className="form-control bg-body"
                         type="search"
                         placeholder="Search"
-                        aria-label="Search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
-                      <button
-                        className="btn bg-transparent px-2 py-0 position-absolute top-50 end-0 translate-middle-y"
-                        type="submit"
-                      >
-                        <i className="fas fa-search fs-6 " />
-                      </button>
+                      {searchQuery === "" && ( // Check if the search query is empty
+                        <button
+                          className="btn bg-transparent px-2 py-0 position-absolute top-50 end-0 translate-middle-y"
+                          onClick={(event) => event.preventDefault()}
+                        >
+                          <i className="fas fa-search fs-6 " />
+                        </button>
+                      )}
                     </form>
+
                   </div>
                   {/* Select option */}
                   <div className="col-md-3">
-        <form>
-          <select
-            className="form-select  border-0 z-index-9"
-            aria-label=".form-select-sm"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-          >
-            <option value="">Sort by</option>
-            <option value="asc">Ascendant</option>
-            <option value="desc">Descendant</option>
-          </select>
-        </form>
-      </div>
+                    <form>
+                      <select
+                        className="form-select  border-0 z-index-9"
+                        aria-label=".form-select-sm"
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                      >
+                        <option value="">Sort by</option>
+                        <option value="A-Z">Ascendant</option>
+                        <option value="Z-A">Descendant</option>
+                      </select>
+                    </form>
+                  </div>
                 </div>
                 {/* Search and select END */}
               </div>
@@ -169,30 +202,36 @@ const handleSort = () => {
                   <table className="table table-dark-gray align-middle p-4 mb-0 table-hover">
                     {/* Table head */}
                     <thead>
-  <tr>
-    <th scope="col" className="border-0 rounded-start">Name</th>
-    <th scope="col" className="border-0">Capcité</th>
-    <th scope="col" className="border-0">Status</th> {/* Nouvelle colonne pour l'image */}
-    <th scope="col" className="border-0 rounded-end">Action</th>
-  </tr>
-</thead>
-<tbody>
-  {classes.map((clas, index) => (
-    <tr key={index}>
-      <td>{clas.name}</td>
-      <td>{clas.capacity}</td>
-      <td>{clas.status}</td>
-
-      
-      <td>
-        <Link to={`/edit-classe/${clas._id}`} className="btn btn-success-soft btn-round me-1 mb-1 mb-md-0">
-            <i class="bi bi-pencil-square"></i>
-        </Link>
-        <button onClick={() => handleDeleteClasses(clas._id)} className="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0"><i class="bi bi-trash"></i></button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                      <tr>
+                        <th scope="col" className="border-0 rounded-start">Name</th>
+                        <th scope="col" className="border-0">Capacity</th>
+                        <th scope="col" className="border-0">Status</th> {/* Nouvelle colonne pour l'image */}
+                        <th scope="col" className="border-0 rounded-end">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentClasses.map((classe) => (
+                        <tr key={classe._id}>
+                          <td>{classe.name}</td>
+                          <td>{classe.capacity}</td>
+                          <td>{classe.status}</td>
+                          <td>
+                            <Link
+                              to={`/edit-classe/${classe._id}`}
+                              className="btn btn-success-soft btn-round me-1 mb-1 mb-md-0"
+                            >
+                              <i className="bi bi-pencil-square"></i>
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteClasses(classe._id)}
+                              className="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
 
                     {/* Table body END */}
                   </table>
@@ -202,54 +241,85 @@ const handleSort = () => {
               </div>
               {/* Card body END */}
               {/* Card footer START */}
-              <div className="card-footer bg-transparent pt-0">
-                {/* Pagination START */}
-                <div className="d-sm-flex justify-content-sm-between align-items-sm-center">
-                  {/* Content */}
-                  <p className="mb-0 text-center text-sm-start">
-                    Showing 1 to 8 of 20 entries
-                  </p>
-                  {/* Pagination */}
-                  <nav
-                    className="d-flex justify-content-center mb-0"
-                    aria-label="navigation"
-                  >
-                    <ul className="pagination pagination-sm pagination-primary-soft d-inline-block d-md-flex rounded mb-0">
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#" tabIndex={-1}>
-                          <i className="fas fa-angle-left" />
-                        </a>
-                      </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
-                          1
-                        </a>
-                      </li>
-                      <li className="page-item mb-0 active">
-                        <a className="page-link" href="#">
-                          2
-                        </a>
-                      </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
-                          3
-                        </a>
-                      </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
-                          <i className="fas fa-angle-right" />
-                        </a>
-                      </li>
-                    </ul>
-                  </nav>
+
+              <div className="card-footer bg-transparent pt-0 px-4">
+                  <div className="d-sm-flex justify-content-sm-between align-items-sm-center">
+                    <p className="mb-0 text-center text-sm-start">
+                      Showing {indexOfFirstClass + 1} to{" "}
+                      {Math.min(indexOfLastClass, filteredClasses.length)} of{" "}
+                      {filteredClasses.length} entries
+                    </p>
+                    <nav
+                      className="d-flex justify-content-center mb-0"
+                      aria-label="navigation"
+                    >
+                      <ul className="pagination pagination-sm pagination-primary-soft d-inline-block d-md-flex rounded mb-0">
+                        <li
+                          className={`page-item ${
+                            currentPage === 1 && "disabled"
+                          }`}
+                        >
+                          {" "}
+                          <button
+                            className="page-link"
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            <i className="fas fa-angle-left" />
+                          </button>
+                        </li>
+                        {Array.from(
+                          {
+                            length: Math.ceil(
+                              filteredClasses.length / itemsPerPage
+                            ),
+                          },
+                          (_, index) => (
+                            <li
+                              key={index}
+                              className={`page-item ${
+                                index + 1 === currentPage ? "active" : ""
+                              }`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() => paginate(index + 1)}
+                              >
+                                {index + 1}
+                              </button>
+                            </li>
+                          )
+                        )}
+                        <li
+                          className={`page-item ${
+                            currentPage ===
+                            Math.ceil(filteredClasses.length / itemsPerPage)
+                              ? "disabled"
+                              : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={
+                              currentPage ===
+                              Math.ceil(filteredClasses.length / itemsPerPage)
+                            }
+                          >
+                            <i className="fas fa-angle-right" />
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
                 </div>
-                {/* Pagination END */}
-              </div>
               {/* Card footer END */}
+
+
             </div>
-            {/* Card END */}
+              )}
           </div>
-          {/* Page main content END */}
+          }
         </div>
         {/* Page content END */}
       </main>
@@ -259,15 +329,3 @@ const handleSort = () => {
 }
 
 export default Index;
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams,Link } from 'react-router-dom';
 import success from '../../assetss/images/icons8-success.svg'
-import fail from '../../assetss/images/icons8-fail-188.png'
+//import fail from '../../assetss/images/icons8-fail-188.png'
 
 function Success() {
   const [searchParams] = useSearchParams();
@@ -43,8 +43,8 @@ function Success() {
                 </React.Fragment>
               ) : (
                 <React.Fragment>
-                  <h3 className="mb-4 text-danger">Payment Failed</h3>
-                  <img src={fail} alt="Error Icon" className="img-fluid mb-4" />
+                  <h3 className="mb-4">Payment Failed</h3>
+                  <img  alt="Error Icon" className="img-fluid mb-4" />
                   <p className="text-muted">Oops! Something went wrong with your payment. Please try again later.</p>
                 </React.Fragment>
               )}

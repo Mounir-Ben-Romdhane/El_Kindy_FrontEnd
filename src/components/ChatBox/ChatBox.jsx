@@ -56,7 +56,7 @@ const sendMessageToServer = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const { data } = await getMessages(props.keyy);
+        const { data } = await getMessages(props.keyy, axiosPrivate);
         setMessages(data);
       } catch (error) {
         console.log(error);
@@ -105,7 +105,7 @@ const sendMessageToServer = () => {
     formData.append("picturePath", imagePath);
     
     try {
-      const { data } = await addMessage(formData);
+      const { data } = await addMessage(formData, axiosPrivate);
       setMessages([...messages, data]);
       setNewMessage("");
       setPicturePath(null);
@@ -153,7 +153,7 @@ const sendMessageToServer = () => {
   };
  // Connect to Socket.io
  useEffect(() => {
-  socket.current = io("ws://localhost:8800");
+  socket.current = io("https://chat-elkindy.onrender.com");
   //console.log("Connected to socket server");
   socket.current.emit("new-user-add", userId);
 

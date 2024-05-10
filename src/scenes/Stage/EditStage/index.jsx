@@ -9,60 +9,59 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import { setAccessToken, setLogout } from "../../../state";
 import refreshToken from "scenes/Authentification/TokenService/tokenService";
+import useAxiosPrivate from "hooks/useAxiosPrivate";
+import { GridLoader } from "react-spinners";
+import Backdrop from "@mui/material/Backdrop";
 
 function EditStage() {
 
   const [dataTheme, setDataTheme] = useState('');
-  const [stage, setstage] = useState({
+  const [stage, setStage] = useState({
     title: "",
     description: "",
     picturePath: "",
     startDate: "",
-    finishDate: ""
+    finishDate: "",
+    place: "",
+    price: ""
   });
+
   const dispatch = useDispatch();
   const { id } = useParams();
-  const accessToken = useSelector((state) => state.accessToken);
-  const refreshTokenState = useSelector((state) => state.refreshToken);
+  const axiosPrivate = useAxiosPrivate();
+  const [errors, setErrors] = useState({});
+  const [formModified, setFormModified] = useState(false); // State variable to track form modification
+  //const dispatch = useDispatch();
+  const navigate = useNavigate();
+  let [color, setColor] = useState("#399ebf");
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchData = async () => {
+      setOpen(true);
       try {
-        const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setstage(data);
-        } else if (response.status === 401 || response.status === 403) {
-          // Refresh access token
-          const newAccessToken = await refreshToken(refreshTokenState, dispatch);
-          if (newAccessToken) {
-            // Retry fetching stages with the new access token
-            dispatch(setAccessToken({ accessToken: newAccessToken }));
-            //fetchData();
-            console.log("newAccessToken : ", newAccessToken);
-          } else {
-            console.error("Failed to refresh access token.");
-            dispatch(setLogout()); // Log out user if token refresh fails
-          }
+        const response = await axiosPrivate.get(`/stage/stage/${id}`);
+        //console.log("response:", response);
+        if (response.status === 200) {
+          const data = await response.data;
+          //console.log("data:", data);
+          setStage(data);
+          setOpen(false);
         } else {
-          const errorMessage = await response.text();
-          //dispatch(setLogout()); // Log out user if token refresh fails
-          throw new Error(errorMessage);
+          setOpen(false);
+          throw new Error("Failed to fetch stage data");
         }
       } catch (error) {
-        console.error("Error fetching stages:", error);
-        // Handle error
+        setOpen(false);
+        console.error("Error fetching stage data:", error);
       }
     };
 
-    if (id) fetchData();
-  }, [accessToken, dispatch, id]);
+    fetchData();
+  }, [axiosPrivate, id]);
 
 
   // State to hold the image name
@@ -78,8 +77,25 @@ function EditStage() {
     setImageName(selectedFile.name);
     // Set the image file
     setImageFile(selectedFile);
-  };
 
+    // Remove red border when an image is selected
+    event.target.parentElement.classList.remove("border-danger");
+
+    // Check if a picture is selected and update the error status
+    if (!selectedFile) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "Please upload an image!",
+      }));
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "",
+      }));
+    }
+    setFormModified(true); // Set form as modified when image is selected
+
+  };
   // Function to handle removing the image
   const handleRemoveImage = () => {
     // Reset the image name to null
@@ -87,68 +103,162 @@ function EditStage() {
     // Reset the image file
     setImageFile(null);
     // Reset the input field value to allow selecting the same file again
-    document.getElementById('image').value = '';
+    document.getElementById("image").value = "";
+
+    if (stage.picturePath === "") {
+      // Update the error status for the picture field
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "Please upload an image!",
+      }));
+
+      // Add red border if no image is selected after removal
+      document
+        .getElementById("image")
+        .parentElement.classList.add("border-danger");
+    }
+    setFormModified(false); // Set form as modified when image is selected
+
   };
 
-  //const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setStage({ ...stage, [name]: value });
+    validateField(name, value);
+    setFormModified(true); // Set form as modified when any field is changed
 
+  };
+ 
+  const validateField = (name, value) => {
+    let error = '';
+    switch (name) {
+      case 'title':
+        error = value.trim() === '' ? 'Please enter a stage title!' : '';
+        break;
+      case 'description':
+        error = value.trim() === '' ? 'Please enter a stage description!' : '';
+        break;
+      case 'picture':
+        error = value === null ? 'Please upload an image!' : '';
+        break;
+      case 'startDate':
+        error = value === '' ? 'Please select a stage startDate!' : '';
+        break;
+      case 'finishDate':
+        error = value === '' ? 'Please select a stage finishDate!' : '';
+        break;
+      case 'place':
+        error = value === '' ? 'Please select a stage place!' : '';
+        break;
+        case 'price':
+  // Validate price only if a value is provided
+  if (value.trim() !== '') {
+    error = /^\d+$/.test(value) ? '' : 'Please enter a valid price!';
+  }        
+  break;
 
-  const updateStage = async (values, onSubmitProps) => {
-    console.log("values", values);
-    // this allow us to send form info with image
-    const formData = new FormData();
-    for (let value in values) {
-      formData.append(value, values[value]);
+      default:
+        break;
     }
-    formData.append('picturePath', values.picture.name);
-    console.log("formData", formData);
-    console.log("picture name", values.picture.name);
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
 
-    const savedStageResponse = await fetch(
-      `https://el-kindy-project-backend.onrender.com/api/stage/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
-      }
-    );
-    const savedStage = await savedStageResponse.json();
-    //onSubmitProps.resetForm();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (savedStage) {
-      console.log('Stage updated!');
-      console.log("Stage", savedStage);
-      // Show the toast notification with autoClose: false
-      toast.success("Stage updated successfully !!", {
-        autoClose: 1500,
-        style: {
-          color: 'green' // Text color
+    // Create FormData object from form
+    const formData = new FormData(event.target);
+    // Convert FormData to plain object
+    const formValues = Object.fromEntries(formData.entries());
+
+    // Validate fields
+    for (let [key, value] of Object.entries(formData)) {
+      validateField(key, value);
+    }
+
+    // Check if there are any errors
+    if (Object.values(errors).some((error) => error !== "")) {
+      console.log("aefbaefoaefni");
+      return;
+    } else {
+      try {
+        setOpen2(true);
+        // Check if any form data has changed
+        const formDataChanged = Object.keys(formValues).some((key) => {
+          return formValues[key] !== formData[key];
+        });
+
+        if (formDataChanged) {
+          if (imageFile) {
+            //console.log("changed");
+            const formDataToSend = new FormData();
+            for (let value in formValues) {
+              formDataToSend.append(value, formValues[value]);
+            }
+            formDataToSend.append("picturePath", formValues.picture.name);
+
+            //console.log("formDataToSend : ", formDataToSend);
+
+            // If form data has changed, send the updated data
+            const response = await axiosPrivate.patch(
+              `/api/stage/${id}`,
+              formDataToSend
+            );
+            if (response.status === 200) {
+              toast.success("stage updated successfully !!", {
+                autoClose: 1000,
+                style: {
+                  color: "green",
+                },
+              });
+              setOpen2(false);
+              setTimeout(() => {
+                navigate("/liststage");
+              }, 1500);
+            } else {
+              setOpen2(false);
+              console.log("cant update!!!");
+            }
+          } else {
+            //console.log("not changed");
+            //console.log("formData : ", formData);
+
+            // If form data has changed, send the updated data
+            const response = await axiosPrivate.patch(
+              `/api/stage/${id}`,
+              formData
+            );
+            if (response.status === 200) {
+              toast.success("Stage updated successfully !!", {
+                autoClose: 1000,
+                style: {
+                  color: "green",
+                },
+              });
+              setOpen2(false);
+              setTimeout(() => {
+                navigate("/listStage");
+              }, 1500);
+            } else {
+              setOpen2(false);
+              console.log("cant update!!!");
+            }
+          }
+        } else {
+          setOpen2(false);
+          // If no changes were made, simply navigate away
+          navigate("/ListStage");
         }
-      });
-      setTimeout(() => {
-        navigate('/listStage');
-      }, 2000);
-
+      } catch (error) {
+        setOpen2(false);
+        console.error("Failed to update Stage:", error);
+      }
     }
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setstage((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
 
-  const handleFormSubmit = async (values, onSubmitProps) => {
-    values.preventDefault();
-    const formData = new FormData(values.target); // Create FormData object from form
-    const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
-    await updateStage(formValues, onSubmitProps);
-  };
+
+
 
   return (
     <div>
@@ -157,6 +267,24 @@ function EditStage() {
         {/* Page content START */}
         <div className="page-content">
           <TopBarBack />
+          {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
+          ) : (
+            <>
+              <Backdrop
+                sx={{
+                  color: "#fff",
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={open2}
+              >
+                <GridLoader color={color} loading={loading} size={20} />
+              </Backdrop>
           <ToastContainer />
 
           {/* Page main content START */}
@@ -183,7 +311,7 @@ function EditStage() {
 
               </div>
 
-              <form onSubmit={handleFormSubmit}>
+              <form onSubmit={handleSubmit}>
                 {/* Step 1 content START */}
                 <div className="m-4">
                   {/* Title */}
@@ -192,44 +320,92 @@ function EditStage() {
                   <div className="row g-4">
                     {/* stage title */}
                     <div className="col-12">
-                      <label className="form-label">Stage title</label>
-                      <input className="form-control" onChange={handleChange} value={stage.title} name="title" type="text" placeholder="Enter stage title" required />
+                      <label className="form-label">Internship title</label>
+                      <input
+                        className={`form-control ${errors.title ? "is-invalid" : ""
+                          }`}
+                        onChange={handleChange}
+                        value={stage.title}
+                        name="title"
+                        type="text"
+                        placeholder="Enter course title"
+                        
+                      />
+                      {errors.title && (
+                        <div className="invalid-feedback">{errors.title}</div>
+                      )}
                     </div>
                     {/* Short description */}
                     <div className="col-12">
                       <label className="form-label">Short description</label>
-                      <textarea className="form-control" onChange={handleChange} value={stage.description} name="description" rows={2} placeholder="Enter keywords" defaultValue={""} required />
+                      <textarea
+                        className={`form-control ${errors.description ? "is-invalid" : ""
+                          }`}
+                        id="description"
+                        name="description"
+                        rows="3"
+                        value={stage.description}
+                        onChange={handleChange}
+                      ></textarea>
+                      {errors.description && (
+                        <div className="invalid-feedback">
+                          {errors.description}
+                        </div>
+                      )}
                     </div>
                     {/* Upload image START */}
                     <div className="m-4">
                       {/* Image */}
                       <div className="col-12">
-                        <div className="text-center justify-content-center align-items-center mx-5 my-5 p-sm-5 border border-2 border-dashed position-relative rounded-3">
+                        <div
+                          className={`text-center justify-content-center align-items-center mx-5 my-5 p-sm-5 border border-2 border-dashed position-relative rounded-3 ${errors.picture ? "border-danger" : ""
+                            }`}
+                        >
                           {/* Display the image */}
-                          {(imageFile) ? (
+                          {imageFile ? (
                             <div>
                               <img
                                 src={URL.createObjectURL(imageFile)}
                                 alt="Uploaded image"
-                                className="img-fluid mb-2"
-                                style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
+                                
+                                className="img-fluid p-2 mb-2"
+                                style={{
+                                  maxWidth: "100%", // This makes the image responsive
+                                      maxHeight: "300px",
+                                      height: "auto", // Maintain aspect ratio
+                                      width: "auto", // Allow width to scale with the height
+                                      objectFit: "contain", // Ensures the image is scaled to maintain its aspect ratio while fitting within the frame
+                                     }} // Limit image dimensions
                                 required
                               />
                               <p className="mb-0">Uploaded image</p>
                             </div>
-                          ) : <div>
-                            <img
-                              src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
-                              alt="Uploaded image"
-                              className="img-fluid mb-2"
-                              style={{ maxWidth: '300px', maxHeight: '300px' }} // Limit image dimensions
-                              required
-                            />
-                            <p className="mb-0">{stage.picturePath}</p>
-                          </div>}
+                          ) : (
+                            <div>
+                              <img
+                                src={`https://el-kindy-project-backend.onrender.com/assets/${stage.picturePath}`}
+                                alt="Uploaded image"
+                                className="img-fluid p-2 mb-2"
+                                style={{
+                                  maxWidth: "300px",
+                                  maxHeight: "300px",
+                                }} // Limit image dimensions
+                                required
+                              />
+                              <p className="mb-0">{stage.picturePath}</p>
+                            </div>
+                          )}
                           {/* Upload image button */}
                           <div className="mb-3">
-                            <h6 className="my-2">Upload stage image here, or <span className="text-primary" style={{ cursor: 'pointer' }}>Browse</span></h6>
+                            <h6 className="my-2">
+                              Upload Internship image here, or{" "}
+                              <span
+                                className="text-primary"
+                                style={{ cursor: "pointer" }}
+                              >
+                                Browse
+                              </span>
+                            </h6>
                             {/* File input */}
                             <input
                               className="form-control"
@@ -240,10 +416,15 @@ function EditStage() {
                               onChange={handleImageSelect}
                             />
                             {/* Note */}
-                            <p className="small mb-0 mt-2"><b>Note:</b> Only JPG, JPEG, and PNG formats are supported. Our suggested dimensions are 600px * 450px. Larger images will be cropped to fit our thumbnails/previews.</p>
+                            <p className="small mb-0 mt-2">
+                              <b>Note:</b> Only JPG, JPEG, and PNG formats are
+                              supported. Our suggested dimensions are 600px *
+                              450px. Larger images will be cropped to fit our
+                              thumbnails/previews.
+                            </p>
                           </div>
                           {/* Remove image button */}
-                          {(imageName) && (
+                          {imageName && (
                             <div className="d-sm-flex justify-content-end mt-2">
                               <button
                                 type="button"
@@ -259,32 +440,60 @@ function EditStage() {
                     </div>
                     {/* Upload image END */}
 
-
-
-
                     {/* stage time */}
-                    <div className="col-md-6">
-                      <label className="form-label">stage start Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="startDate"
-                        value={stage.startDate}
-                        required
-                      />                    </div>
+                   {/* stage time */}
+<div className="col-md-6">
+  <label className="form-label">stage start Date</label>
+  <input
+    className={`form-control ${errors.startDate ? "is-invalid" : ""}`}
+    type="date"
+    name="startDate"
+    value={stage.startDate}
+    onChange={handleChange}
+    />
+    {errors.startDate && <div className="invalid-feedback">{errors.startDate}</div>}
+   </div>
 
-                    {/* stage price */}
-                    <div className="col-md-6">
-                      <label className="form-label">stage finish Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="finishDate"
-                        value={stage.finishDate}
-                        required
-                      />                  </div>
+{/* stage price */}
+<div className="col-md-6">
+  <label className="form-label">stage finish Date</label>
+  <input
+    className={`form-control ${errors.finishDate ? "is-invalid" : ""}`}
+    type="date"
+    name="finishDate"
+    onChange={handleChange}
+    value={stage.finishDate}
+  />
+      {errors.finishDate && <div className="invalid-feedback">{errors.finishDate}</div>}
 
+</div>
 
+{/* stage place */}
+<div className="col-md-6">
+  <label className="form-label">stage spots</label>
+  <input
+    className={`form-control ${errors.place ? "is-invalid" : ""}`}
+    type="number"
+    name="place"
+    
+    value={stage.place}
+    onChange={handleChange}  />
+        {errors.place && <div className="invalid-feedback">{errors.place}</div>}
+
+</div>
+
+{/* stage price */}
+<div className="col-md-6">
+  <label className="form-label">stage price</label>
+  <input
+    className="form-control"
+    type="number"
+    name="price"
+    value={stage.price}
+    onChange={handleChange}  />
+          {errors.price && <div className="invalid-feedback">{errors.price}</div>}
+
+</div>
 
 
                   </div>
@@ -293,8 +502,17 @@ function EditStage() {
                   {/* Step 4 button */}
                   <div className="d-md-flex justify-content-end align-items-start mt-4">
                     <div className="text-md-end">
-                      <button href="stage-added.html" className="btn btn-success mb-2 mb-sm-0" type="submit">Submit a stage</button>
-                      <p className="mb-0 small mt-1">Once you click "Submit a stage", your stage will be uploaded and marked as pending for review.</p>
+                      <button
+                        disabled={!formModified} // Disable button if form is not modified
+                        className="btn btn-success mb-2 mb-sm-0"
+                        type="submit"
+                      >
+                        Update an Internship
+                      </button>
+                      <p className="mb-0 small mt-1">
+                        Once you click "Update an Internship", your internship will be
+                        updated .
+                      </p>
                     </div>
                   </div>
 
@@ -305,6 +523,8 @@ function EditStage() {
 
 
           </div>
+          </>
+          )}
         </div>
       </main>
     </div>

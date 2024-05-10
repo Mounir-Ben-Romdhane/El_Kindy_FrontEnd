@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Footer from "components/Footer";
+import FooterClient from "components/FooterClient"
 import NavBar from "components/NavBar";
 import { useSelector } from "react-redux";
 import { loadScripts } from '../../scriptLoader';
@@ -43,7 +43,7 @@ function Index() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://el-kindy-project-backend.onrender.com/api/categories', {
+        const response = await fetch('https://el-kindy-project-backend.onrender.com/api/categories/allCategories', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ Categories START */}
         </section>
       </div>
 
-      <Footer />
+      <FooterClient />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import SideBar from "components/SideBar";
 import TopBarBack from "components/TopBarBack";
 import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 
 import {
   blockUser,
@@ -10,8 +11,22 @@ import {
 } from "services/usersService/api";
 import AddStudent from "../userCrud/addStudent";
 import UpdateStudent from "../userCrud/updateStudent";
+import Backdrop from "@mui/material/Backdrop";
+import GridLoader from "react-spinners/GridLoader";
+import { Button, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { useTranslation } from "react-i18next";
+import withReactContent from "sweetalert2-react-content";
+import Swal from "sweetalert2";
+import useAxiosPrivate from "hooks/useAxiosPrivate";
+const MySwal = withReactContent(Swal);
+
 
 function StudentsDashboard() {
+
+  const iconStyle = {
+    marginRight: "10px",
+  };
+
   const [students, setStudents] = useState([]);
   const [student, setStudent] = useState();
   const [loading, setLoading] = useState(true);
@@ -19,6 +34,34 @@ function StudentsDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [showFormUpdate, setShowFormUpdate] = useState(false);
   const [studentDetails, setStudentDetails] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(6);
+  let [color, setColor] = useState("#399ebf");
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const axiosPrivate = useAxiosPrivate();
+
+
+  const { t, i18n } = useTranslation();
+
+
+  const getAvatarSrc = (student) => {
+    if ( student.picturePath !== "" && student.authSource === "local") {
+      // If user has a custom picture path
+      return `https://el-kindy-project-backend.onrender.com/assets/${student.picturePath}`;
+    } else if (student && student.picturePath === "" && student.gender !== "") {
+      // If user has no custom picture but has a gender
+      return student.gender === "Male"
+        ? "/assets/images/element/02.jpg"
+        : "/assets/images/element/01.jpg";
+    } else {
+      // Default avatar if no picture path or gender is available
+      return student.picturePath;
+    }
+  };
+
+
 
   const handleToggleMore = (studentId) => {
     setStudentDetails((prevState) => ({
@@ -49,52 +92,107 @@ function StudentsDashboard() {
   };
 
   const handleBlockStudent = async (studentId) => {
-    try {
-      // Make API call to block student
-      const response = await blockUser(studentId);
-
-      if (response.status === 200) {
-        console.log("Student blocked successfully!");
-        // Perform any additional actions if needed
-        fetchData();
-      } else {
-        console.error("Error blocking student:", response.data);
-        // Handle error here, e.g., show error message to the user
+    MySwal.fire({
+      title: t("confirm.block_title"),
+      text: t("confirm.block_text"),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: t("confirm.yes_block"),
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setOpen2(true);
+        try {
+          const response = await blockUser(studentId, axiosPrivate);
+          if (response.status === 200) {
+            MySwal.fire(
+              t("confirm.blocked"),
+              t("confirm.block_success"),
+              "success"
+            );
+            fetchData();
+            setOpen2(false);
+          } else {
+            throw new Error(response.data);
+          }
+        } catch (error) {
+          console.error("Error blocking student:", error);
+          MySwal.fire(
+            t("confirm.error"),
+            t("confirm.block_failure"),
+            "error"
+          );
+          setOpen2(false);
+        }
       }
-    } catch (error) {
-      console.error("Error blocking student:", error);
-      // Handle error here, e.g., show error message to the user
-    }
+    });
   };
-
+  
   const handleUnblockStudent = async (studentId) => {
-    try {
-      // Make API call to unblock student
-      const response = await unblockUser(studentId);
-
-      if (response.status === 200) {
-        console.log("Student unblocked successfully!");
-        // Perform any additional actions if needed
-        fetchData();
-      } else {
-        console.error("Error unblocking student:", response.data);
-        // Handle error here, e.g., show error message to the user
+    MySwal.fire({
+      title: t("confirm.unblock_title"),
+      text: t("confirm.unblock_text"),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: t("confirm.yes_unblock"),
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setOpen2(true);
+        try {
+          const response = await unblockUser(studentId, axiosPrivate);
+          if (response.status === 200) {
+            MySwal.fire(
+              t("confirm.unblocked"),
+              t("confirm.unblock_success"),
+              "success"
+            );
+            fetchData();
+            setOpen2(false);
+          } else {
+            throw new Error(response.data);
+          }
+        } catch (error) {
+          console.error("Error unblocking student:", error);
+          MySwal.fire(
+            t("confirm.error"),
+            t("confirm.unblock_failure"),
+            "error"
+          );
+          setOpen2(false);
+        }
       }
-    } catch (error) {
-      console.error("Error unblocking student:", error);
-      // Handle error here, e.g., show error message to the user
-    }
+    });
   };
+  
 
   const fetchData = async () => {
+    setOpen(true);
+
     try {
-      const response = await getUsers("student");
+      const response = await getUsers("student", axiosPrivate);
       setStudents(response.data.data);
-      setLoading(false);
+      if (response.status === 200) {
+        setOpen(false);
+      } else {
+        setOpen(false);
+      }
     } catch (error) {
       console.error("Error fetching students:", error);
       setError("Error fetching students. Please try again later.");
       setLoading(false);
+      setOpen(false);
+
+      // Multilingual toast message
+      toast.error(
+        t("admins_dashboard.get_data_failed"), // Translation key for failed data retrieval
+        {
+          autoClose: 1500,
+          style: { color: "red" },
+        }
+      );
     }
   };
 
@@ -102,17 +200,129 @@ function StudentsDashboard() {
     fetchData();
   }, []);
 
-  // Function to handle student removal
   const handleRemoveStudent = async (studentId) => {
+    MySwal.fire({
+      title: t("confirm.remove_title"),
+      text: t("confirm.remove_text"),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: t("confirm.yes_remove"),
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setOpen2(true);
+        try {
+          const response = await removeUser(studentId, axiosPrivate);
+          if (response.status === 200) {
+            MySwal.fire(
+              t("confirm.removed"),
+              t("confirm.remove_success"),
+              "success"
+            );
+            fetchData();
+            close();
+            setOpen2(false);
+          } else {
+            throw new Error("Failed to remove student.");
+          }
+        } catch (error) {
+          console.error("Error removing student:", error);
+          MySwal.fire(
+            t("confirm.error"),
+            t("confirm.remove_failure"),
+            "error"
+          );
+          setOpen2(false);
+        }
+      }
+    });
+  };
+  
+
+  // Search functionality
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset current page when searching
+  };
+
+ 
+
+  const filteredStudents = students.filter((student) => {
+    const lowerSearchQuery = searchTerm.toLowerCase();
+  
+    // Basic information check (similar to basic fields in TeachersDashboard)
+    const matchesBasicInfo = (
+      `${student.firstName} ${student.lastName}`.toLowerCase().includes(lowerSearchQuery) ||
+      (student.email && student.email.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.address && student.address.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.phoneNumber1 && student.phoneNumber1.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.gender && student.gender.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.blocked && 'blocked'.includes(lowerSearchQuery)) ||
+      (!student.blocked && 'active'.includes(lowerSearchQuery)) ||
+      (student.dateOfBirth && new Date(student.dateOfBirth).toLocaleDateString().toLowerCase().includes(lowerSearchQuery))
+    );
+  
+    // Nested objects and arrays
+    const matchesClasses = student.studentInfo.classLevel && 
+      student.studentInfo.classLevel.className.toLowerCase().includes(lowerSearchQuery);
+  
+    const matchesCoursesEnrolled = student.studentInfo.coursesEnrolled &&
+      student.studentInfo.coursesEnrolled.some(course => course.title.toLowerCase().includes(lowerSearchQuery));
+  
+    const matchesParentDetails = (
+      (student.studentInfo.parentName && student.studentInfo.parentName.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.studentInfo.parentEmail && student.studentInfo.parentEmail.toLowerCase().includes(lowerSearchQuery)) ||
+      (student.studentInfo.parentPhone && student.studentInfo.parentPhone.toLowerCase().includes(lowerSearchQuery))
+    );
+  
+    // Combine all match checks
+    return matchesBasicInfo || matchesClasses || matchesCoursesEnrolled || matchesParentDetails;
+  });
+  
+
+  // Pagination
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  //export admins
+  const djangoapi = "https://elkindy-django-1.onrender.com/insertdata/students/";
+  const addStudent = async () => {
+    setOpen2(true);
+
     try {
-      // Call the removeStudent function from your service
-      await removeUser(studentId);
-      fetchData();
-      close();
+      const response = await fetch(djangoapi); // Assuming your backend API is available at this endpoint
+      if (response.status === 200) {
+        toast.success(t("student_dashboard.add_students_success"), {
+          autoClose: 1500,
+          style: { color: "green" },
+        });
+        fetchData();
+        setOpen2(false);
+
+      } 
     } catch (error) {
-      console.error("Error removing student:", error);
-      // Handle errors as needed
+      toast.error(t("student_dashboard.add_students_failure"), {
+        autoClose: 1500,
+        style: { color: "red" },
+      });       setOpen2(false);
+
     }
+  };
+
+  const handleOpenSheets = () => {
+    // URL of your Google Sheets document
+    const googleSheetsUrl =
+      "https://docs.google.com/spreadsheets/d/1pRMgY4bmKN7Ruc3Dt9qjTiNSuEOF_0IGFtmKHoWJduc/edit#gid=0";
+
+    // Open the Google Sheets document in a new tab
+    window.open(googleSheetsUrl, "_blank");
   };
 
   return (
@@ -121,12 +331,26 @@ function StudentsDashboard() {
         <SideBar />
         <div className="page-content">
           <TopBarBack />
-          {loading ? (
-            <h2>Loading...</h2>
+          {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
           ) : error ? (
             <h2>Error: {error}</h2>
           ) : (
             <div className="page-content-wrapper border">
+              {/* Backdrop with GridLoader */}
+              <ToastContainer />
+
+              <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open2}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
               <div className="row">
                 <div className="col-12">
                   <h1 className="h2 mb-2 mb-sm-0">Students list</h1>
@@ -135,30 +359,70 @@ function StudentsDashboard() {
               <div className="card bg-transparent">
                 <div className="card-header bg-transparent border-bottom px-0">
                   <div className="row g-3 align-items-center justify-content-between">
-                    <div className="col-md-8">
+                    <div className="col-md-6">
                       <form className="rounded position-relative">
                         <input
                           className="form-control bg-transparent"
                           type="search"
                           placeholder="Search"
                           aria-label="Search"
+                          value={searchTerm}
+                          onChange={handleSearchChange}
                         />
-                        <button
-                          className="btn bg-transparent px-2 py-0 position-absolute top-50 end-0 translate-middle-y"
-                          type="submit"
-                        >
-                          <i className="fas fa-search fs-6 " />
-                        </button>
+                        {searchTerm === "" && (
+                          <button
+                            className="btn bg-transparent px-2 py-0 position-absolute top-50 end-0 translate-middle-y"
+                            onClick={(event) => event.preventDefault()}
+                          >
+                            <i className="fas fa-search fs-6 " />
+                          </button>
+                        )}
                       </form>
                     </div>
-                    <div className="col-md-4 text-end">
-                      <button
-                        className="btn btn-primary"
-                        onClick={handleToggleForm}
-                      >
-                        Add New Student
-                      </button>
-                    </div>
+                    <div className="col-md-6 d-flex justify-content-end">
+  <button
+    className="btn btn-info m-2 text-wrap text-break"
+    onClick={addStudent}
+    style={{
+      fontSize: "0.7rem", // Smaller font size
+      padding: "0.45rem 0.6rem", // Smaller padding
+    }}
+  >
+    <i className="fas fa-file-import" style={{ width: "1em", marginRight: "5px" }}></i>
+    <span className="d-none d-md-inline">
+      Import Student
+    </span>
+  </button>
+
+  <button
+    className="btn btn-success m-2 text-wrap text-break"
+    onClick={handleOpenSheets}
+    style={{
+      fontSize: "0.7rem", // Smaller font size
+      padding: "0.45rem 0.6rem", // Smaller padding
+    }}
+  >
+    <i className="fas fa-file-alt" style={{ width: "1em", marginRight: "7px" }}></i>
+    <span className="d-none d-md-inline">
+      Open Google Sheets
+    </span>
+  </button>
+
+  <button
+    className="btn btn-primary m-2 text-wrap text-break"
+    onClick={handleToggleForm}
+    style={{
+      fontSize: "0.7rem", // Smaller font size
+      padding: "0.45rem 0.6rem", // Smaller padding
+    }}
+  >
+    <i className="fas fa-user" style={{ width: "1em", marginRight: "7px" }}></i>
+    <span className="d-none d-md-inline">
+      Add New Student
+    </span>
+  </button>
+</div>
+
                   </div>
                 </div>
                 <div className="card-body px-0">
@@ -168,18 +432,19 @@ function StudentsDashboard() {
                       id="nav-preview-tab-1"
                     >
                       <div className="row g-4">
-                        {students.map((student) => (
-                          <div key={student._id} className="col-md-6 col-xxl-4">
+                        {currentStudents.map((student) => (
+                          <div
+                            key={student._id}
+                            className="col-md-6 col-xxl-4"
+                          >
+                            {/* Student card JSX */}
                             <div className="card bg-transparent border h-100">
                               <div className="card-header bg-transparent border-bottom d-flex justify-content-between">
                                 <div className="d-sm-flex align-items-center">
                                   <div className="avatar avatar-md flex-shrink-0">
                                     <img
                                       className="avatar-img rounded-circle"
-                                      src={
-                                        student.picturePath ||
-                                        "assets/images/element/02.jpg"
-                                      }
+                                      src={getAvatarSrc(student)}
                                       alt="avatar"
                                     />
                                   </div>
@@ -439,7 +704,12 @@ function StudentsDashboard() {
                 <div className="d-sm-flex justify-content-sm-between align-items-sm-center">
                   {/* Content */}
                   <p className="mb-0 text-center text-sm-start">
-                    Showing 1 to 8 of 20 entries
+                    Showing {indexOfFirstStudent + 1} to{" "}
+                    {Math.min(
+                      indexOfLastStudent,
+                      filteredStudents.length
+                    )}{" "}
+                    of {filteredStudents.length} entries
                   </p>
                   {/* Pagination */}
                   <nav
@@ -447,28 +717,20 @@ function StudentsDashboard() {
                     aria-label="navigation"
                   >
                     <ul className="pagination pagination-sm pagination-primary-soft mb-0 pb-0 px-0">
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#" tabIndex={-1}>
+                      <li className={`page-item ${currentPage === 1 && 'disabled'}`}>
+                        <a className="page-link" href="#" onClick={() => paginate(currentPage - 1)} tabIndex={-1}>
                           <i className="fas fa-angle-left" />
                         </a>
                       </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
-                          1
-                        </a>
-                      </li>
-                      <li className="page-item mb-0 active">
-                        <a className="page-link" href="#">
-                          2
-                        </a>
-                      </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
-                          3
-                        </a>
-                      </li>
-                      <li className="page-item mb-0">
-                        <a className="page-link" href="#">
+                      {Array.from({ length: Math.ceil(filteredStudents.length / studentsPerPage) }, (_, i) => (
+                        <li key={i} className={`page-item ${currentPage === i + 1 && 'active'}`}>
+                          <a className="page-link" href="#" onClick={() => paginate(i + 1)}>
+                            {i + 1}
+                          </a>
+                        </li>
+                      ))}
+                      <li className={`page-item ${currentPage === Math.ceil(filteredStudents.length / studentsPerPage) && 'disabled'}`}>
+                        <a className="page-link" href="#" onClick={() => paginate(currentPage + 1)}>
                           <i className="fas fa-angle-right" />
                         </a>
                       </li>
@@ -478,6 +740,7 @@ function StudentsDashboard() {
                 {/* Pagination END */}
               </div>
               {/* Card footer END */}
+
             </div>
           )}
 

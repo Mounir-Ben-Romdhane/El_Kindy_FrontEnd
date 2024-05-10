@@ -1,88 +1,125 @@
+
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Footer from 'components/Footer';
+
+import FooterClient from 'components/FooterClient';
+
 import NavBar from 'components/NavBar';
-import React, { useEffect, useState } from "react";
 import SideBarStudent from 'components/SideBarStudent';
 import TopBarTeacherStudent from 'components/TopBarTeacherStudent';
+import ReviewPopup from '../../ReviewPage/PopupReview';
+import { CircularProgress } from '@mui/material';
+import useAxiosPrivate from 'hooks/useAxiosPrivate';
+import Backdrop from "@mui/material/Backdrop";
+import GridLoader from "react-spinners/GridLoader";
 
-function index() {
+function Index() {
+    const [openPopup, setOpenPopup] = useState(false);
+    const [teachers, setTeachers] = useState([]);
+    const [selectedTeacher, setSelectedTeacher] = useState(null);
+    const [loading, setLoading] = useState(false);
+    let [color, setColor] = useState("#399ebf");
+  const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+    
+  // Refresh token
+  const axiosPrivate = useAxiosPrivate();
+
+  
+    useEffect(() => {
+        checkLastDayOfMonth();
+        fetchTeachers();
+        
+    }, []);
+
+    const fetchTeachers = async () => {
+        try {
+            const response = await axiosPrivate.get('/auth/getAllUserByRole/teacher');
+            console.log("API response data:", response.data.data);  // Check what's being received from the API
+            setTeachers(response.data.data);
+            if (Array.isArray(response.data.data) && response.data.data.length > 0) {
+                setSelectedTeacher(response.data.data[0]);  // Default to the first teacher object
+            }
+        } catch (error) {
+            console.error('Failed to fetch teachers:', error);
+        }
+    };
+
+    const checkLastDayOfMonth = () => {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const isLastDayOfMonth = today.getMonth() !== tomorrow.getMonth();
+
+        if (isLastDayOfMonth) {
+            const lastReviewDate = localStorage.getItem('lastReviewDate');
+            const lastReviewMonth = lastReviewDate ? new Date(lastReviewDate).getMonth() : null;
+            const currentMonth = today.getMonth();
+
+            if (lastReviewMonth === null || lastReviewMonth !== currentMonth) {
+                setOpenPopup(true);
+                localStorage.setItem('lastReviewDate', today.toISOString());
+            }
+        }
+    };
 
     return (
         <div>
-            {/* **************** MAIN CONTENT START **************** */}
-                        {/* ****************testt **************** */}
-
             <main>
-
-
-                {/* hedha l partie l fou9aneya  */}
-                < NavBar />
-                < TopBarTeacherStudent />
-                {/* =======================
-Page content START */}
+                <NavBar />
+                <TopBarTeacherStudent />
                 <section className="pt-0">
                     <div className="container">
                         <div className="row">
                             <SideBarStudent />
                             <div className="col-xl-9">
-                                {/* Counter boxes START */}
-                                <div className="row mb-4">
-                                    {/* Counter item */}
-                                    <div className="col-sm-6 col-lg-4 mb-3 mb-lg-0">
-                                        <div className="d-flex justify-content-center align-items-center p-4 bg-orange bg-opacity-15 rounded-3">
-                                            <span className="display-6 lh-1 text-orange mb-0"><i className="fas fa-tv fa-fw" /></span>
-                                            <div className="ms-4">
-                                                <div className="d-flex">
-                                                    <h5 className="purecounter mb-0 fw-bold" data-purecounter-start={0} data-purecounter-end={9} data-purecounter-delay={200}>0</h5>
-                                                </div>
-                                                <p className="mb-0 h6 fw-light">Total Courses</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Counter item */}
-                                    <div className="col-sm-6 col-lg-4 mb-3 mb-lg-0">
-                                        <div className="d-flex justify-content-center align-items-center p-4 bg-purple bg-opacity-15 rounded-3">
-                                            <span className="display-6 lh-1 text-purple mb-0"><i className="fas fa-clipboard-check fa-fw" /></span>
-                                            <div className="ms-4">
-                                                <div className="d-flex">
-                                                    <h5 className="purecounter mb-0 fw-bold" data-purecounter-start={0} data-purecounter-end={52} data-purecounter-delay={200}>0</h5>
-                                                </div>
-                                                <p className="mb-0 h6 fw-light">Complete lessons</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Counter item */}
-                                    <div className="col-sm-6 col-lg-4 mb-3 mb-lg-0">
-                                        <div className="d-flex justify-content-center align-items-center p-4 bg-success bg-opacity-10 rounded-3">
-                                            <span className="display-6 lh-1 text-success mb-0"><i className="fas fa-medal fa-fw" /></span>
-                                            <div className="ms-4">
-                                                <div className="d-flex">
-                                                    <h5 className="purecounter mb-0 fw-bold" data-purecounter-start={0} data-purecounter-end={8} data-purecounter-delay={300}>0</h5>
-                                                </div>
-                                                <p className="mb-0 h6 fw-light">Achieved Certificates</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Counter boxes END */}
-                                {/* Main content END */}
-                            </div>{/* Row END */}
-
-                        </div>{/* Row END */}
+                            {open ? (
+                  <Backdrop
+                    sx={{
+                      color: "#fff",
+                      zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={open}
+                  >
+                    <GridLoader color={color} loading={loading} size={20} />
+                  </Backdrop>
+                ) : error ? (
+                  <h2>Error: {error}</h2>
+                ) : (
+                    <>
+                     <div className="card bg-transparent border-2 rounded-3">
+                    {/* Counter boxes START */}
+                    <div className="m-3">
+                            {loading ? <CircularProgress /> : (
+                                <ReviewPopup
+                                open={openPopup}
+                                handleClose={() => setOpenPopup(false)}
+                                teachers={teachers}
+                                selectedTeacher={selectedTeacher}
+                                setSelectedTeacher={setSelectedTeacher} // Confirm this is correctly passed
+                              />
+                            )}
+                         </div>   
+                         </div>
+                    </>
+                        )}
+                        </div>
+                        </div>
                     </div>
                 </section>
+
+                <Footer />
+
                 {/* =======================
 Page content END */}
 
 
 
-
-                <Footer />
-
             </main>
-            {/* **************** MAIN CONTENT END **************** */}
-
         </div>
-    )
+    );
 }
 
-export default index
+export default Index;

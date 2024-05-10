@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import Footer from "components/Footer";
+import FooterClient from "components/FooterClient";
 import NavBar from "components/NavBar";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -15,7 +15,7 @@ function Index() {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const response = await fetch("https://el-kindy-project-backend.onrender.com/stage");
+        const response = await fetch("https://el-kindy-project-backend.onrender.com/stage/Stage");
         const { stages } = await response.json();
         setStages(stages);
       } catch (error) {
@@ -102,11 +102,13 @@ function Index() {
             <div className="card-body">
             
               {/* Title */}
-              <h5 className="card-title">
+              <h5 className="card-title ">
                 
                 <a href="#">{stage.title}</a>
                 
               </h5>
+              <h4 className="mb-0">{stage.price ? `${stage.price} TND` : "Free"}</h4>
+
               <p className="text-truncate-2">{stage.description}</p>
               {/* Info */}
               <div className="d-flex justify-content-between " >
@@ -126,7 +128,7 @@ function Index() {
 
       </div>
 
-      <Footer />
+      <FooterClient />
     </>
   );
 }

@@ -3,25 +3,50 @@ import TopBarBack from "components/TopBarBack";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getInscription } from "services/inscriptionService/api";
-import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+
 import useAxiosPrivate from "hooks/useAxiosPrivate";
+import Swal from "sweetalert2";
+import NoData from "components/NoData";
+import withReactContent from "sweetalert2-react-content";
+import { Backdrop } from "@mui/material";
+import { GridLoader } from "react-spinners";
+const MySwal = withReactContent(Swal);
+
 
 function Index() {
   const { id } = useParams();
   const [inscription, setInscription] = useState("");
   const [disponibilite, setDisponibilite] = useState([]);
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  let [color, setColor] = useState("#399ebf");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   //refresh token
   const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     const fetchData = async () => {
+      setOpen(true);
+
       try {
-        const inscription = await getInscription(id);
-        console.log("inscription", inscription.data);
+        const inscription = await getInscription(id, axiosPrivate);
+        //console.log("inscription", inscription.data);
         setInscription(inscription.data);
         setDisponibilite(inscription.data.disponibilite);
+        setOpen(false);
       } catch (err) {
+        setOpen(false);
+        toast.error(
+          "Error fetching inscription.",
+          {
+            autoClose: 1500,
+            style: { color: "red" },
+          }
+        );
         console.log(err);
       }
     };
@@ -29,34 +54,106 @@ function Index() {
   }, []);
 
   const approveInscription = async (id) => {
+    MySwal.fire({
+      title: "Are you sure?",
+      text: "Do you want to approve the payment for this inscription?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, approve it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setOpen2(true);
+        try {
+          const response = await axiosPrivate.patch(`/inscription/${id}/approvepayment`);
+          if (response.status === 200) {
+            setOpen2(false);
+            toast.success("Payment approved successfully!", {
+              autoClose: 1000,
+              style: { color: "green" },
+            });
+            
+            setTimeout(() => {
+              navigate("/inscriptionsList");
+            }, 1500);
+          }
+        } catch (error) {
+          console.error(error);
+          if (error.response && error.response.status === 400) {
+            setOpen2(false);
+
+            toast.error("Issue encountered during approval. Email already exist.", {
+              autoClose: 1500,
+              style: { color: "red" },
+            });
+          } else {
+            setOpen2(false);
+
+            toast.error(
+              "Error approving payment. Please check the console for more details.",
+              {
+                autoClose: 1500,
+                style: { color: "red" },
+              }
+            );
+          }
+        }
+      }
+    });
+  };
+  
+
+ /*  const activateuser = async (id) => {
     try {
       const response = await axiosPrivate.patch(
         `/inscription/${id}/approve`
       );
       if (response.status === 200) {
         navigate("/inscriptionsList");
-      }else {
-        // Handle other response statuses here
-        const errorMessage = response.data.message; // Assuming there's an error message returned in the response data
-        alert(errorMessage); // Display the error message in an alert
       }
     } catch (error) {
       console.error(error);
     }
-  };
+  }; */
 
   const rejectInscription = async (id) => {
     try {
-      const response = await axiosPrivate.patch(
-        `/inscription/${id}/reject`
-      );
-      if (response.status === 200) {
-        navigate("/inscriptionsList");
-      }
+      const result = await MySwal.fire({
+        title: "Are you sure?",
+        text: "Do you want to reject this inscription?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, reject it!",
+      });
+  
+      if (result.isConfirmed) {
+        setOpen2(true);
+        const response = await axiosPrivate.patch(`/inscription/${id}/reject`);
+        if (response.status === 200) {
+          setOpen2(false);
+            toast.success("Inscription rejected successfully!", {
+              autoClose: 1000,
+              style: { color: "green" },
+            });
+            
+            setTimeout(() => {
+              navigate("/inscriptionsList");
+            }, 1500);
+        }
+      } 
     } catch (error) {
+      setOpen2(false);
+      toast.error("Inscription rejection error.", {
+        autoClose: 1000,
+        style: { color: "red" },
+      });
       console.error(error);
     }
   };
+  
   
 
   return (
@@ -67,9 +164,31 @@ function Index() {
         {/* Page content START */}
         <div className="page-content">
           <TopBarBack />
-
+          {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
+          ) : error ? (
+            <h2>Error: {error}</h2>
+          ) : (
+            <div>
+              <Backdrop
+                sx={{
+                  color: "#fff",
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={open2}
+              >
+                <GridLoader color={color} loading={loading} size={20} />
+              </Backdrop>
+          <ToastContainer />
           {/* Page main content START */}
           <div className="page-content-wrapper border">
+          
+
             {/* Title */}
             <div className="row">
               <div className="col-12 mb-3">
@@ -175,13 +294,8 @@ function Index() {
                           <li className="list-group-item d-flex">
                             <span>Message:</span>
                             <p className="h6 mb-0">
-                              As it so contrasted oh estimating instrument. Size
-                              like body someone had. Are conduct viewing boy
-                              minutes warrant the expense Tolerably behavior may
-                              admit daughters offending her ask own. Praise
-                              effect wishes change way and any wanted. Lively
-                              use looked latter regard had. Do he it part more
-                              last in
+                            Hello El Kindy Conservatory, I have just submitted my pre-registration form and wanted to confirm that you have received it. Could you please confirm my submission and let me know the next steps? I am looking forward to starting my musical education with you. Thank you!
+
                             </p>
                           </li>
                         </ul>
@@ -197,18 +311,25 @@ function Index() {
                         >
                           <button
                             className="btn btn-sm btn-success-soft"
-                            style={{ width: "120px" }}
+                            style={{ width: "130px" }}
                             onClick={() => approveInscription(inscription._id)}
                           >
-                            Approve
+                            Payment Request
                           </button>
                           <button
                             className="btn btn-sm btn-danger-soft"
                             style={{ width: "120px" }}
                             onClick={() => rejectInscription(inscription._id)}
                           >
-                            Reject
+                            Reject Request
                           </button>
+                          {/* <button
+                            className="btn btn-sm btn-info-soft"
+                            style={{ width: "120px" }}
+                            onClick={() => activateuser(inscription._id)}
+                          >
+                            Activate user
+                          </button> */}
                         </div>
                       )}
                     </div>
@@ -298,6 +419,8 @@ function Index() {
             {/* Row END */}
           </div>
           {/* Page main content END */}
+          </div>
+          )}
         </div>
       </main>
     </div>

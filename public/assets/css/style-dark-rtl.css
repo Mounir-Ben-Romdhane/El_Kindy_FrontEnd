@@ -7333,6 +7333,20 @@ textarea.form-control-lg {
   overflow-y: auto;
 }
 
+.offcanvas-bodyy {
+  padding: 1rem;
+  overflow-y: auto; 
+  flex-grow: 1;
+}
+
+.sidebar-contentt {
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+}
+
+
+
 .offcanvas-start {
   top: 0;
   right: 0;

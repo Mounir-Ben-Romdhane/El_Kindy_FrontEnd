@@ -2,62 +2,72 @@ import React, { useEffect, useState } from "react";
 import NavBar from 'components/NavBar'
 import BannerStartHome from 'components/BannerStartHome'
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import Footer from "components/Footer";
+import FooterClient from "components/FooterClient";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 
 function Index() {
-    const [stage, setStage] = useState([]);
-    const { id } = useParams();
-    const [showContactForm, setShowContactForm] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const navigate = useNavigate();
-    const [reservation, setReservation] = useState({
-      name: "",
-      email: "",
-      phoneNumber: "",
-      message: "",
-    });    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
-            method: "GET",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setStage(data);
-          } else {
-            const errorMessage = await response.text();
-            throw new Error(errorMessage);
-          }
-        } catch (error) {
-          console.error("Error fetching stage:", error);
+  const [stage, setStage] = useState([]);
+  const [stageDetails, setStageDetails] = useState({});
+  const { id } = useParams();
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [reservation, setReservation] = useState({
+    userName: "",
+    userEmail: "",
+    phoneNumber: "",
+    message: "",
+  });
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`https://el-kindy-project-backend.onrender.com/stage/${id}`, {
+          method: "GET",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setStage(data);
+          setStageDetails(data); // Assuming data contains the stage details
+        } else {
+          const errorMessage = await response.text();
+          throw new Error(errorMessage);
         }
-      };
+      } catch (error) {
+        console.error("Error fetching stage:", error);
+        setError("Failed to load event details. Please try again later.");
+      }
+    };
   
-      if (id) fetchData();
-    }, [id]);
-  
-    const handleApplyClick = () => {
-      setShowContactForm(prevState => !prevState);
+    if (id) fetchData();
+  }, [id]);
+  useEffect(() => {
+    if (reservationSuccess) {
+      navigate("/stage");
+    }
+  }, [reservationSuccess, navigate]);
+
+
+
+  const handleApplyClick = () => {
+    setShowContactForm(prevState => !prevState);
   };
 
   const handleReservationSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+  
     try {
-      // Here you should replace 'YOUR_RESERVATION_ENDPOINT' with your actual endpoint URL
-      const url = `https://el-kindy-project-backend.onrender.com/reservationstage/${id}/reservation`;
-      const dataToSend = {
-        userName: reservation.name,
-        userEmail: reservation.email,
-        phoneNumber: reservation.phoneNumber,
-        message: reservation.message
-      };
-      const response = await axios.post(url, dataToSend);
-      console.log("Reservation response:", response.data);
-      toast.success("Reservation successful!", { autoClose: 2000 });
-      navigate("/stage"); // Redirect to "/stage" after successful submission
+      if (!stageDetails.price) {
+        // Event is free, submit reservation directly
+        await submitReservation();
+      } else {
+        // Event is paid, initiate payment process
+        await initiatePayment();
+      }
     } catch (error) {
       toast.error("Reservation failed. " + error.message);
       console.error("Reservation error:", error);
@@ -65,7 +75,91 @@ function Index() {
       setIsSubmitting(false);
     }
   };
+
+  const submitReservation = async () => {
+    try {
+      const url = `https://el-kindy-project-backend.onrender.com/reservationStage/${id}/reservation`;
+      const dataToSend = {
+        userName: reservation.userName,
+        userEmail: reservation.userEmail,
+        phoneNumber: reservation.phoneNumber,
+        message: reservation.message,
+        amount: stageDetails.price,
+      };
+      
+      console.log("Sending reservation data:", dataToSend);
   
+      const response = await axios.post(url, dataToSend);
+      console.log("Reservation response:", response.data);
+      toast.success("Reservation successful!", {
+        onClose: () => navigate("/stage"),
+        autoClose: 2000,
+      });
+    } catch (error) {
+      console.error("Reservation failed:", error.response ? error.response.data : error.message);
+      throw new Error("Failed to submit reservation.");
+    }
+  };
+  
+  
+  const totalAmount = stageDetails.price  * 1000;
+
+  const initiatePayment = async () => {
+    try {
+      const paymentData = {
+        stageId: stageDetails._id,
+        amount: totalAmount,
+        userName: reservation.userName,
+        userEmail: reservation.userEmail,
+        phoneNumber: reservation.phoneNumber,
+        message: reservation.message
+      };
+  
+      const response = await axios.post(
+        `https://el-kindy-project-backend.onrender.com/payment/paymentStage`,
+        paymentData
+      );
+  
+      console.log("Payment initiation response:", response.data);
+  
+      if (response.data && response.data.paymentLink) {
+        const paymentLink = response.data.paymentLink;
+  
+        window.open(paymentLink, '_blank');
+  
+        const paymentId = response.data.paymentId;
+      } else {
+        console.error("Payment link not found in the response.");
+      }
+    } catch (error) {
+      console.error("Failed to initiate payment.", error);
+      // Handle error
+    }
+  };
+  
+
+  const verifyPayment = async (paymentId) => {
+    try {
+      // Make a request to your backend to verify the payment
+      const verifyUrl = `https://developers.flouci.com/api/verify_payment/${paymentId}`;
+      const verifyResponse = await axios.get(verifyUrl, {
+        headers: {
+          'apppublic': 'a1e02adf-ac26-42dd-ac2c-bcce4039c770',
+          'appsecret': process.env.flouci_secret
+        }
+      });
+  
+      // Assuming payment verification is successful
+      console.log("Payment verification response:", verifyResponse.data);
+  
+      // Proceed with reservation after payment verification
+      submitReservation();
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+    }
+  };
+  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setReservation((reservation) => ({
@@ -136,6 +230,10 @@ function Index() {
                 {showContactForm ? "Hide Form" : "Apply"}
               </button>
               <div className="row">
+                <h4 className="mb-0">{stage.price ? `${stage.price} TND` : "Free"}</h4>
+                <h4 className="mb-0">Number of Places: {stage.place}</h4>
+              </div>
+              <div className="row">
                 <div className="col-md-6">
                   <p className="mt-4">{stage.description}</p>
                   {/* Personal info */}
@@ -157,63 +255,73 @@ function Index() {
                 {/* Show contact form if applicable */}
                 {showContactForm && (
                   <div className="col-md-6">
-  <form onSubmit={handleReservationSubmit}>
+                    <form onSubmit={handleReservationSubmit}>
+                      {/* Hidden input field for stage ID */}
+                      <input type="hidden" name="stageId" value={id} />
                       {/* Name */}<h2>Internship Form</h2>
                       <div className="mb-4 bg-light-input">
-                        <label htmlFor="yourName" className="form-label">Your name *</label>
-                        <input 
-  type="text" 
-  className="form-control form-control-lg" 
-  value={reservation.name} 
-  onChange={(e) => setReservation({ ...reservation, name: e.target.value })}
-  id="yourName" 
-/>
+                        <label htmlFor="yourName" className="form-label">Your name </label>
+                        <input
+                          type="text"
+                          className="form-control form-control-lg"
+                          value={reservation.userName}
+onChange={(e) =>
+  setReservation({
+    ...reservation,
+    [e.target.name]: e.target.value,
+  })
+}
+                          name="userName"  // Make sure this attribute is correct
+                          id="yourName"
+                        />
 
                       </div>
                       {/* Email */}
                       <div className="mb-4 bg-light-input">
                         <label htmlFor="emailInput" className="form-label">Email address *</label>
-                        <input 
-  type="email" 
-  className="form-control form-control-lg" 
-  value={reservation.email} 
-  onChange={(e) => setReservation({ ...reservation, email: e.target.value })}
-  id="emailInput" 
-/>
+                        <input
+                          type="email"
+                          className="form-control form-control-lg"
+                          value={reservation.userEmail}
+                          onChange={(e) => setReservation({ ...reservation, userEmail: e.target.value })}
+                          id="emailInput"
+                        />
                       </div>
-                       {/* Message */}
-                       <div className="mb-4 bg-light-input">
+                      {/* Message */}
+                      <div className="mb-4 bg-light-input">
                         <label htmlFor="phoneNumberareaBox" className="form-label">phoneNumber *</label>
-                        <input 
-  type="text" 
-  className="form-control form-control-lg" 
-  value={reservation.phoneNumber} 
-  onChange={(e) => setReservation({ ...reservation, phoneNumber: e.target.value })}
-  id="phoneNumberInput" 
-/>
+                        <input
+                          type="text"
+                          className="form-control form-control-lg"
+                          value={reservation.phoneNumber}
+                          onChange={(e) => setReservation({ ...reservation, phoneNumber: e.target.value })}
+                          id="phoneNumberInput"
+                        />
                       </div>
 
                       {/* PhoneNumber */}
                       <div className="mb-4 bg-light-input">
                         <label htmlFor="textareaBox" className="form-label">Message *</label>
-                        <textarea 
-  className="form-control" 
-  value={reservation.message} 
-  onChange={(e) => setReservation({ ...reservation, message: e.target.value })}
-  id="textareaBox" 
-  rows={4} 
-/>
+                        <textarea
+                          className="form-control"
+                          value={reservation.message}
+                          onChange={(e) => setReservation({ ...reservation, message: e.target.value })}
+                          id="textareaBox"
+                          rows={4}
+                        />
                       </div>
-                     
+
                       {/* Button */}
                       <div className="d-grid">
-                      <button 
-  className="btn btn-lg btn-primary mb-0"
-  type="submit"  // Change the type to "submit" 
-  onClick={handleReservationSubmit}
->
-  Apply For Internship
-</button>
+                      <div className="d-grid">
+    <button
+      type="submit"
+      className="btn btn-primary btn-lg"
+      disabled={isSubmitting}
+    >
+      Submit Reservation
+    </button>
+  </div>
                       </div>
                     </form>
                   </div>
@@ -225,7 +333,7 @@ function Index() {
           {/* Row END */}
         </div>
       </section>
-      <Footer />
+      <FooterClient />
     </div>
   );
 }

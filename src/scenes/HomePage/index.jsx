@@ -1,4 +1,4 @@
-import Footer from "components/Footer";
+import FooterClient from "components/FooterClient"
 import NavBar from "components/NavBar";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from 'react-router-dom';
@@ -6,13 +6,19 @@ import { Link } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import { loadScripts } from "../../scriptLoader";
 import axios from "axios";
-
+import useAxiosPrivate from "hooks/useAxiosPrivate";
+import {getUsers} from "services/usersService/api";
 
 function Index() {
   const user = useSelector((state) => state.user);
   const scriptsLoaded = useRef(false);
   const [coursesByCategories, setCoursesByCategories] = useState([]);
-  
+  const [courses, setCourses] = useState([]); // State to hold the list of courses
+  const axiosPrivate = useAxiosPrivate();
+  const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [categories, setCategories] = useState([]);
+
 //
   const [currentImage, setCurrentImage] = useState(0);
   const [nextImage, setNextImage] = useState(1);
@@ -22,6 +28,45 @@ function Index() {
     "assets/images/element/slider3.jpg",
     // Add more image URLs as needed
   ];
+  const fetchData = async () => {
+    try {
+      const response = await getUsers("teacher");
+      setTeachers(response.data.data);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
+  const fetchDataa = async () => {
+    try {
+      const response = await getUsers("student");
+      setStudents(response.data.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+  useEffect(() => {
+    fetchDataa();
+  }, []);
+
+  // Fetch courses from the server when component mounts
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axiosPrivate.get("/course/all"); // Fetch courses from the server
+        setCourses(response.data.data); // Update the courses state with the fetched data
+        console.log(response.data.data)
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses(); // Call the fetchCourses function
+  }, [axiosPrivate]); // Only re-run effect if axiosPrivate changes
 
   //get all category
   const fetchCoursesByCategories = async () => {
@@ -76,7 +121,18 @@ function Index() {
     return () => clearTimeout(transitionTimer);
   }, [nextImage]);
 
-  
+  const fetchCategories = async () => {
+    try {
+      const response = await axiosPrivate.get("/api/categories");
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return (
     <>
@@ -307,12 +363,12 @@ Main Banner START */}
                 </ul>
                 <div className="d-sm-flex align-items-center justify-content-center justify-content-lg-start">
                   {/* Button */}
-                  <a
-                    href="#"
+                  <Link
+                    to="/inscription"
                     className="btn btn-lg btn-danger-soft me-2 mb-4 mb-sm-0"
                   >
                     Get Started
-                  </a>
+                  </Link>
                   {/* Video button */}
                   <a
                     data-glightbox
@@ -338,17 +394,17 @@ Main Banner START */}
                   <div className="d-flex justify-content-between align-items-center">
                     {/* Icon */}
                     <span className="icon-lg bg-warning rounded-circle">
-                      <i className="fas fa-envelope text-white" />
+                      <i className="fas fa-music text-white" />
                     </span>
                     {/* Info */}
                     <div className="text-start ms-3">
                       <h6 className="mb-0 text-white">
-                        Congratulations{" "}
+                        Come experience our World{" "}
                         <span className="ms-4">
-                          <i className="fas fa-check-circle text-success" />
-                        </span>
+                        <i class='fas fa-music text-success'></i>
+                                                </span>
                       </h6>
-                      <p className="mb-0 small text-white">You are welcome</p>
+                      <p className="mb-0 small text-white">Where we all live </p>
                     </div>
                   </div>
                 </div>
@@ -427,15 +483,10 @@ Main Banner END */}
                   </span>
                   <div className="ms-4 h6 fw-normal mb-0">
                     <div className="d-flex">
-                      <h5
-                        className="purecounter mb-0 fw-bold"
-                        data-purecounter-start="0"
-                        data-purecounter-end="10"
-                        data-purecounter-delay="200"
-                      >
-                        0
+                      <h5>
+                        {courses.length}
                       </h5>
-                      <span className="mb-0 h5">K</span>
+                      <span className="mb-0 h5">+</span>
                     </div>
                     <p className="mb-0">Online Courses</p>
                   </div>
@@ -449,13 +500,8 @@ Main Banner END */}
                   </span>
                   <div className="ms-4 h6 fw-normal mb-0">
                     <div className="d-flex">
-                      <h5
-                        className="purecounter mb-0 fw-bold"
-                        data-purecounter-start="0"
-                        data-purecounter-end="200"
-                        data-purecounter-delay="200"
-                      >
-                        0
+                      <h5>
+                       {teachers.length}
                       </h5>
                       <span className="mb-0 h5">+</span>
                     </div>
@@ -471,15 +517,10 @@ Main Banner END */}
                   </span>
                   <div className="ms-4 h6 fw-normal mb-0">
                     <div className="d-flex">
-                      <h5
-                        className="purecounter mb-0 fw-bold"
-                        data-purecounter-start="0"
-                        data-purecounter-end="60"
-                        data-purecounter-delay="200"
-                      >
-                        0
+                      <h5>
+                        {students.length}
                       </h5>
-                      <span className="mb-0 h5">K+</span>
+                      <span className="mb-0 h5">+</span>
                     </div>
                     <p className="mb-0">Online Students</p>
                   </div>
@@ -489,21 +530,16 @@ Main Banner END */}
               <div className="col-sm-6 col-xl-3">
                 <div className="d-flex justify-content-center align-items-center p-4 bg-info bg-opacity-10 rounded-3">
                   <span className="display-6 lh-1 text-info mb-0">
-                    <i className="bi bi-patch-check-fill"></i>
+                  <i className="bi bi-folder-fill"></i>
                   </span>
                   <div className="ms-4 h6 fw-normal mb-0">
                     <div className="d-flex">
-                      <h5
-                        className="purecounter mb-0 fw-bold"
-                        data-purecounter-start="0"
-                        data-purecounter-end="6"
-                        data-purecounter-delay="300"
-                      >
-                        0
+                      <h5>
+                        {categories.length}
                       </h5>
-                      <span className="mb-0 h5">K+</span>
+                      <span className="mb-0 h5">+</span>
                     </div>
-                    <p className="mb-0">Certified Courses</p>
+                    <p className="mb-0"> Category</p>
                   </div>
                 </div>
               </div>
@@ -651,7 +687,7 @@ Main Banner END */}
             {/* Tabs content END */}
         {/* Button */}
 <div className="text-center mt-5">
-  <a href="#" className="btn btn-primary-soft">View more<i className="fas fa-sync ms-2" /></a>
+  <Link to="/courses" className="btn btn-primary-soft">View more<i className="fas fa-sync ms-2" /></Link>
 </div>
 
           </div>
@@ -1352,7 +1388,7 @@ Course END */}
 
     
       </div>
-      <Footer />
+      <FooterClient />
     </>
   );
 }

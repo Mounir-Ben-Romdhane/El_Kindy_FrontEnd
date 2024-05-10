@@ -1,15 +1,22 @@
 import {  axiosPublic } from "api/axios";
 
-export const getUsers = async (role) => {
-    const reponse = await axiosPublic.get(`/auth/getAllUserByRole/${role}`);
+
+
+export const getUsers = async (role, axiosPrivate) => {
+    const reponse = await axiosPrivate.get(`/auth/getAllUserByRole/${role}`);
     return reponse;
 }
 
+export const getUserById = async (id, axiosPrivate) => {
+  const reponse = await axiosPrivate.get(`/auth/userById/${id}`);
+  return reponse;
+}
+
 // Remove a user
-export const removeUser = async (userId) => {
+export const removeUser = async (userId, axiosPrivate) => {
     try {
-        const response = await axiosPublic.delete(`/auth/removeUser/${userId}`);
-        return response.data;
+        const response = await axiosPrivate.delete(`/auth/removeUser/${userId}`);
+        return response;
     } catch (error) {
         console.error('Error removing user:', error);
         throw error;
@@ -17,9 +24,9 @@ export const removeUser = async (userId) => {
 };
 
 // Add a new user
-export const addAdmin = async (userData) => {
+export const addAdmin = async (userData, axiosPrivate) => {
     try {
-        const response = await axiosPublic.post(`/auth/addAdmin`, userData);
+        const response = await axiosPrivate.post(`/auth/addAdmin`, userData);
         return response;
     } catch (error) {
         console.error('Error adding user:', error);
@@ -28,9 +35,9 @@ export const addAdmin = async (userData) => {
 };
 
 // Update an existing user
-export const updateAdmin = async (userId, userData) => {
+export const updateAdmin = async (userId, userData, axiosPrivate) => {
     try {
-        const response = await axiosPublic.put(`/auth/updateAdmin/${userId}`, userData);
+        const response = await axiosPrivate.put(`/auth/updateAdmin/${userId}`, userData);
         return response;
     } catch (error) {
         console.error('Error updating user:', error);
@@ -39,9 +46,9 @@ export const updateAdmin = async (userId, userData) => {
 };
 
 // Block a user
-export const blockUser = async (userId) => {
+export const blockUser = async (userId, axiosPrivate) => {
     try {
-      const response = await axiosPublic.put(`/auth/blockUser/${userId}`);
+      const response = await axiosPrivate.put(`/auth/blockUser/${userId}`);
       return response;
     } catch (error) {
       console.error('Error blocking user:', error);
@@ -50,9 +57,9 @@ export const blockUser = async (userId) => {
   };
   
   // Unblock a user
-  export const unblockUser = async (userId) => {
+  export const unblockUser = async (userId,axiosPrivate) => {
     try {
-      const response = await axiosPublic.put(`/auth/unblockUser/${userId}`);
+      const response = await axiosPrivate.put(`/auth/unblockUser/${userId}`);
       return response;
     } catch (error) {
       console.error('Error unblocking user:', error);
@@ -63,9 +70,9 @@ export const blockUser = async (userId) => {
 
   
 // Add a new teacher
-export const addTeacher = async (teacherData) => {
+export const addTeacher = async (teacherData, axiosPrivate) => {
   try {
-      const response = await axiosPublic.post(`/auth/addTeacher`, teacherData);
+      const response = await axiosPrivate.post(`/auth/addTeacher`, teacherData);
       return response;
   } catch (error) {
       console.error('Error adding teacher:', error);
@@ -74,9 +81,9 @@ export const addTeacher = async (teacherData) => {
 };
 
 // Update an existing teacher
-export const updateTeacher = async (teacherId, teacherData) => {
+export const updateTeacher = async (teacherId, teacherData, axiosPrivate) => {
   try {
-      const response = await axiosPublic.put(`/auth/updateTeacher/${teacherId}`, teacherData);
+      const response = await axiosPrivate.put(`/auth/updateTeacher/${teacherId}`, teacherData);
       return response;
   } catch (error) {
       console.error('Error updating teacher:', error);
@@ -85,9 +92,9 @@ export const updateTeacher = async (teacherId, teacherData) => {
 };
 
 // Add a new student
-export const addStudent = async (studentData) => {
+export const addStudent = async (studentData, axiosPrivate) => {
   try {
-    const response = await axiosPublic.post(`/auth/addStudentAndParent`, studentData);
+    const response = await axiosPrivate.post(`/auth/addStudentAndParent`, studentData);
     return response;
   } catch (error) {
     console.error('Error adding student:', error);
@@ -96,9 +103,9 @@ export const addStudent = async (studentData) => {
 };
 
 // Update an existing student
-export const updateStudent = async (studentId, studentData) => {
+export const updateStudent = async (studentId, studentData, axiosPrivate) => {
   try {
-    const response = await axiosPublic.put(`/auth/updateStudent/${studentId}`, studentData);
+    const response = await axiosPrivate.put(`/auth/updateStudent/${studentId}`, studentData);
     return response;
   } catch (error) {
     console.error('Error updating student:', error);

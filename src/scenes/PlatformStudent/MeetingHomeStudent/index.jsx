@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import Footer from 'components/Footer';
+import FooterClient from 'components/Footer';
 import SideBarStudent from 'components/SideBarStudent';
 import TopBarTeacherStudent from 'components/TopBarTeacherStudent';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import NavBar from "components/NavBar";
+import NavBar from 'components/NavBar';
 
 function Index() {
   const [meetings, setMeetings] = useState([]);
@@ -46,6 +46,7 @@ function Index() {
     <div>
       {/* **************** MAIN CONTENT START **************** */}
       <main>
+        
         {/* hedha l partie l fou9aneya  */}
         <NavBar />
 
@@ -63,7 +64,7 @@ function Index() {
                   {/* Reviews START */}
                   <div className="card-body mt-2 mt-sm-4 d-flex justify-content-center align-items-center ">
                     {/* Category item */}
-                    <div className="col-sm-9 ">
+                    <div className="col-sm-12 ">
                       <div className="card card-body shadow h-100 d-flex justify-content-center align-items-center  ">
                         {/* Title and image */}
                         <div className="d-flex align-items-center">
@@ -104,7 +105,7 @@ function Index() {
         </section>
         {/* =======================
                   Page content END */}
-        <Footer />
+        <FooterClient />
       </main>
       {/* **************** MAIN CONTENT END **************** */}
     </div>

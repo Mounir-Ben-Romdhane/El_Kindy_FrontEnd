@@ -1,6 +1,5 @@
-import { axiosPrivate } from "api/axios";
 
-export const getInscription = async (id) => {
+export const getInscription = async (id, axiosPrivate) => {
     const reponse = await axiosPrivate.get(`/inscription/${id}`);
     return reponse;
 }

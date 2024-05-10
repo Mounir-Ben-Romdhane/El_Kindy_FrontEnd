@@ -7,21 +7,37 @@ import Modal from "./Modal"; // Assurez-vous d'avoir un composant Modal
 import SideBar from "components/SideBar";
 import TopBarBack from "components/TopBarBack";
 import useAxiosPrivate from "hooks/useAxiosPrivate";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Link, useNavigate } from "react-router-dom";
+import { Backdrop } from "@mui/material";
+import { GridLoader } from "react-spinners";
 const localizer = momentLocalizer(moment);
 
 const MyCalendar = () => {
+  const [errorMessage, setErrorMessage] = useState(""); // Add state for error message
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [timeSlots, setTimeSlots] = useState([]);
+
   const [rooms, setRooms] = useState([]);
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState({});
   const [courses, setCourses] = useState({ data: [] });
   const [classes, setClasses] = useState({ data: [] });
+  const [availableTeachers, setAvailableTeachers] = useState([]); // Define availableTeachers state variable
+
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  let [color, setColor] = useState("#399ebf");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [teacherId, setTeacherId] = useState(null); // Ajoutez un état pour stocker l'ID de l'enseignant sélectionné
+  const navigate = useNavigate();
 
   // Définissez une fonction pour mettre à jour l'ID de l'enseignant sélectionné
 
-  
   const [teachers, setTeachers] = useState([]); // Ajout d'un état pour les enseignants
   const [students, setStudents] = useState([]); // Ajout d'un état pour les étudiants
   const [loadingTeachers, setLoadingTeachers] = useState(true);
@@ -31,19 +47,33 @@ const MyCalendar = () => {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [eventDetails, setEventDetails] = useState(null);
   const [editEventDetails, setEditEventDetails] = useState(null);
+  const updateTimeSlots = (date) => {
+    const newTimeSlots = generateTimeSlots(date); // Générez les créneaux horaires pour la nouvelle date
+    setTimeSlots(newTimeSlots); // Mettez à jour les créneaux horaires dans l'état
+  };
 
   const axiosPrivate = useAxiosPrivate();
   useEffect(() => {
+    const timeSlots = generateTimeSlots(new Date()); // Utilisez la date actuelle ou une autre date si nécessaire
+    setEvents(timeSlots); // Remplacer les créneaux horaires existants par les nouveaux créneaux horaires générés
+  }, []);
+
+  useEffect(() => {
     const fetchEventData = async () => {
+      setOpen(true);
+
       try {
-        const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`);
+        const response = await axios.get(
+          `https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`
+        );
         setEventDetails(response.data);
         setShowModal(true);
+        setOpen(false);
       } catch (error) {
-        console.error('Error fetching event details:', error);
+        console.error("Error fetching event details:", error);
       }
     };
-  
+
     if (selectedEventId) {
       fetchEventData();
     }
@@ -53,148 +83,194 @@ const MyCalendar = () => {
     setSelectedEvent(event);
     handleEditEvent(event); // Appel de handleEditEvent pour l'événement sélectionné
   };
-  
+
   const handleEditEvent = (event) => {
     setSelectedEventId(event._id);
     setEditEventDetails(event);
     setShowModal(true);
   };
+  const filterAvailableTeachers = (start, end) => {
+    const selectedDay = moment(start).format("dddd"); // Obtenir le jour de la semaine au format "Monday", "Tuesday", etc.
+    const selectedStartTime = moment(start).format("HH:mm"); // Obtenir l'heure de début au format "HH:mm"
+    const selectedEndTime = moment(end).format("HH:mm"); // Obtenir l'heure de fin au format "HH:mm"
+
+    // Obtenir la date précédente
+    const previousDay = moment(start).subtract(1, "day");
+    const previousDayName = previousDay.format("dddd");
+
+    // Obtenir la date suivante
+    const nextDay = moment(start).add(1, "day");
+    const nextDayName = nextDay.format("dddd");
+
+    // Filtrer les enseignants en fonction de leur disponibilité pour le jour sélectionné ainsi que pour les jours précédents et suivants
+    const availableTeachers = teachers.filter((teacher) => {
+      // Vérifier la disponibilité pour le jour sélectionné, le jour précédent et le jour suivant
+      const isAvailableSelectedDay = teacher.disponibilite.some((slot) => {
+        return (
+          slot.day === selectedDay &&
+          slot.startTime <= selectedStartTime &&
+          slot.endTime >= selectedEndTime
+        );
+      });
+      const isAvailablePreviousDay = teacher.disponibilite.some((slot) => {
+        return (
+          slot.day === previousDayName &&
+          slot.startTime <= selectedStartTime &&
+          slot.endTime >= selectedEndTime
+        );
+      });
+      const isAvailableNextDay = teacher.disponibilite.some((slot) => {
+        return (
+          slot.day === nextDayName &&
+          slot.startTime <= selectedStartTime &&
+          slot.endTime >= selectedEndTime
+        );
+      });
+
+      // Retourner vrai si l'enseignant est disponible pour le jour sélectionné, le jour précédent ou le jour suivant
+      return (
+        isAvailableSelectedDay || isAvailablePreviousDay || isAvailableNextDay
+      );
+    });
+
+    return availableTeachers;
+  };
+
   const updateEvent = async (event) => {
     try {
       // Envoyer la requête de mise à jour à l'API
-      const response = await axios.put(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`, event);
-  
+      const response = await axios.put(
+        `https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`,
+        event
+      );
+
       // Extraire les données mises à jour de la réponse de l'API
       const updatedEventData = response.data;
-  
+
       // Convertir les valeurs de start et end en objets Date JavaScript si nécessaire
       updatedEventData.start = new Date(updatedEventData.start);
       updatedEventData.end = new Date(updatedEventData.end);
-    
+
       // Mettre à jour l'état des événements avec les données mises à jour
-      setEvents(events.map((evt) => (evt._id === updatedEventData._id ? updatedEventData : evt)));
-      
+      setEvents(
+        events.map((evt) =>
+          evt._id === updatedEventData._id ? updatedEventData : evt
+        )
+      );
+
       console.log("Event updated successfully:", updatedEventData);
     } catch (error) {
       console.error("Error updating event", error);
     }
   };
-  
-  
- 
-  
-  
-  
-  
-  function generateTimeSlots() {
+  // Définissez vos styles CSS directement ici
+  const calendarStyles = {
+    width: "800px", // Définissez la largeur des cases selon vos préférences
+  };
+
+  const timeSlotStyles = {
+    width: "50px", // Définissez la largeur des cases individuelles
+  };
+  const generateTimeSlots = (selectedDate) => {
     const slots = [];
-    for (let hour = 9; hour < 21; hour += 2) {
-      // Incrémentation par 2 pour sauter une heure à chaque itération
-      let startHour = moment({ hour });
-      let endHour = moment({ hour }).add(1, "hour");
-  
-      // Vérifier si startHour et endHour sont définis
-      if (startHour && endHour) {
-        slots.push({
-          title: `${startHour.format("HH[h]")} - ${endHour.format("HH[h]mm")}`,
-          start: startHour.toDate(),
-          end: endHour.toDate(),
-        });
-      }
-  
-      // Merge chaque paire de créneaux horaires en une seule plage horaire d'une heure
-      if (hour < 19 && startHour && endHour) {
-        let nextStartHour = moment({ hour }).add(1, "hour");
-        let nextEndHour = moment({ hour }).add(2, "hour");
-  
-        slots.push({
-          title: `${nextStartHour.format("HH[h]")} - ${nextEndHour.format(
-            "HH[h]mm"
-          )}`,
-          start: nextStartHour.toDate(),
-          end: nextEndHour.toDate(),
-        });
-      }
+    const currentDate = moment(selectedDate);
+
+    // Définissez l'heure de début et de fin de la journée en fonction de la date sélectionnée
+    const startOfDay = moment(selectedDate).startOf("day");
+    const endOfDay = moment(selectedDate).endOf("day");
+
+    let currentHour = moment(startOfDay);
+
+    // Générez les créneaux horaires pour chaque heure de la journée
+    while (currentHour.isBefore(endOfDay)) {
+      const startHour = moment(currentHour);
+      const endHour = moment(currentHour).add(1, "hour");
+
+      slots.push({
+        title: `${startHour.format("HH[h]")} - ${endHour.format("HH[h]mm")}`,
+        start: startHour.toDate(),
+        end: endHour.toDate(),
+      });
+
+      currentHour.add(1, "hour");
     }
-  
+
     return slots;
-  }
-  
-const MyEvent = ({ event }) => {
+  };
+
+  const MyEvent = ({ event }) => {
     // Vérifier d'abord si les noms des enseignants et des étudiants sont disponibles
     const teacher = teachers.find((t) => t._id === event.teacherId);
     const student = students.find((s) => s._id === event.studentId);
-    const classe = Array.isArray(classes) ? classes.find((s) => s._id === event.classId) : null;
+    const course = courses.data.find((s) => s._id === event.courseId);
+
+    const classe = Array.isArray(classes)
+      ? classes.find((s) => s._id === event.classId)
+      : null;
 
     // Si les noms des enseignants et des étudiants ne sont pas disponibles, affichez "Loading..."
-   
+    const courseName = course ? `${course.title}` : "";
+
     const className = classe ? `${classe.className}` : "";
 
     // Les noms des enseignants et des étudiants sont disponibles, construisez le composant avec les noms
-    const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : "";
-    const studentName = student ? `${student.firstName} ${student.lastName}` : "";
-    const displayStudent = event.studentId && studentName ? `Student: ${studentName}` : "";
+    //  const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : "";
+    //  const studentName = student ? `${student.firstName} ${student.lastName}` : "";
+    // const displayStudent = event.studentId && studentName ? `Student: ${studentName}` : "";
 
     // Afficher "Teacher :" si l'enseignant est sélectionné, sinon afficher "Student :"
-    const displayLabel = event.teacherId ? "Teacher :" : "Student :";
+    //  const displayLabel = event.teacherId ? "Teacher :" : "Student :";
 
     // Afficher "Classe :" uniquement lorsque l'étudiant est sélectionné et que la classe est disponible
-    const displayClass = event.classId && className ? `Classe: ${className}` : "";
+    // const displayClass = event.classId && className ? `Classe: ${className}` : "";
 
     return (
-        <div>
-            <strong>{event.title}</strong>
-            <div>{displayLabel} {event.teacherId ? teacherName : studentName}</div>
-
-            {displayClass && <div>{displayClass}</div>}
-            {displayStudent && <div>{displayStudent}</div>}
-        </div>
+      <div>
+        <strong>{courseName}</strong>
+        {/* Commentaire: */}
+        {/* <div>{displayLabel} {event.teacherId ? teacherName : studentName}</div>
+  
+          {displayClass && <div>{displayClass}</div>}
+          {displayStudent && <div>{displayStudent}</div>} */}
+      </div>
     );
-};
+  };
 
-  
-  
-  // Effect hook pour charger les données
   useEffect(() => {
     const fetchData = async () => {
+      setOpen(true);
       try {
-        const [teachersResponse, studentsResponse] = await Promise.all([
-          axios.get("https://el-kindy-project-backend.onrender.com/auth/teachers"),
-          axios.get("https://el-kindy-project-backend.onrender.com/auth/students"),
-        ]);
-
-        setTeachersData(teachersResponse.data);
-        setStudentsData(studentsResponse.data);
-
         const eventsResponse = await axios.get(
           "https://el-kindy-project-backend.onrender.com/planning/all"
         );
         const loadedEvents = eventsResponse.data.map((event) => {
-          const teacher = teachersResponse.data.find(
-            (t) => t._id === event.teacherId
-          );
-          const student = studentsResponse.data.find(
-            (s) => s._id === event.studentId
+          const color = event.color;
+          const selectedCourse = courses.data.find(
+            (course) => course._id === event.courseId
           );
           return {
             ...event,
-            title: `${event.title}`,
+            title: `${event.title} `,
             start: new Date(event.start),
             end: new Date(event.end),
+            resourceId: event.resourceId,
+            color,
+            teacherId: event.selectedTeacherId,
+            studentId: event.selectedStudentId,
+            id: event._id,
+            courseId: event.courseId || null,
           };
         });
-
+        setOpen(false);
         setEvents(loadedEvents);
+        console.log("Événements mis à jour pour le calendrier:", loadedEvents);
       } catch (error) {
-        console.error("Error fetching data", error);
-      } finally {
-        setLoadingTeachers(false);
-        setLoadingStudents(false);
+        console.error("There was an error fetching the events", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentDate]); // Mettre à jour les événements lorsque la date actuelle change
 
   useEffect(() => {
     Promise.all([
@@ -210,11 +286,11 @@ const MyEvent = ({ event }) => {
       .catch((error) => {
         console.error("Error fetching teachers and students", error);
       });
-      axiosPrivate
-      .get("https://el-kindy-project-backend.onrender.com/classes/getAll") // Récupérez la liste des cours
+    axiosPrivate
+      .get("/classes/getAll") // Récupérez la liste des cours
       .then((response) => {
         setClasses(response.data); // Stockez les cours dans l'état
-        console.log("claaassssss",response.data);
+        console.log("claaassssss", response.data);
       })
       .catch((error) => {
         console.error("There was an error fetching the courses", error);
@@ -228,7 +304,7 @@ const MyEvent = ({ event }) => {
         console.error("There was an error fetching the rooms", error);
       });
     axiosPrivate
-      .get("https://el-kindy-project-backend.onrender.com/course/all") // Récupérez la liste des cours
+      .get("/course/all") // Récupérez la liste des cours
       .then((response) => {
         setCourses(response.data); // Stockez les cours dans l'état
         console.log(response.data);
@@ -236,29 +312,48 @@ const MyEvent = ({ event }) => {
       .catch((error) => {
         console.error("There was an error fetching the courses", error);
       });
-   // Appel de l'API pour obtenir les informations de l'enseignant
-axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teacherId}`)
-.then((response) => {
-  // Une fois la réponse reçue, extrayez les classes enseignées par l'enseignant
-  const teacher = response.data;
-  const classesTaught = teacher.teacherInfo.classesTeaching;
-  // Stockez les classes dans l'état ou faites tout autre traitement nécessaire
-  setClasses(classesTaught);
-  console.log("Classes enseignées par l'enseignant:", classesTaught);
-})
-.catch((error) => {
-  console.error("Une erreur s'est produite lors de la récupération des informations de l'enseignant", error);
-});
-
-    
-
+    // Appel de l'API pour obtenir les informations de l'enseignant
+    axiosPrivate
+      .get(`/auth/getAllUserByRole/teacher`)
+      .then((response) => {
+        // Une fois la réponse reçue, extrayez les classes enseignées par l'enseignant
+        const teacher = response.data;
+        const classesTaught = teacher.teacherInfo.classesTeaching;
+        // Stockez les classes dans l'état ou faites tout autre traitement nécessaire
+        setClasses(classesTaught);
+        console.log("Classes enseignées par l'enseignant:", classesTaught);
+      })
+      .catch((error) => {
+        console.error(
+          "Une erreur s'est produite lors de la récupération des informations de l'enseignant",
+          error
+        );
+      });
+      axiosPrivate
+      .get(`/auth/getAllUserByRole/teacher`)
+      .then((response) => {
+        // Une fois la réponse reçue, extrayez les classes enseignées par l'enseignant
+        const teacher = response.data;
+        const studentsTaught = teacher.teacherInfo.studentsTaught;
+        // Stockez les classes dans l'état ou faites tout autre traitement nécessaire
+        setStudents(studentsTaught);
+        console.log("Classes enseignées par l'enseignant:", studentsTaught);
+      })
+      .catch((error) => {
+        console.error(
+          "Une erreur s'est produite lors de la récupération des informations de l'enseignant",
+          error
+        );
+      });
     axios
       .get("https://el-kindy-project-backend.onrender.com/planning/all")
       .then((response) => {
         const loadedEvents = response.data.map((event) => {
           // Assurez-vous que chaque événement a un ID unique.
           const color = event.color; // Utilisez l'ID de l'événement pour récupérer sa couleur
-
+          const selectedCourse = courses.data.find(
+            (course) => course._id === event.courseId
+          );
           return {
             ...event,
             title: `${event.title} `,
@@ -270,12 +365,12 @@ axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teach
             teacherId: event.selectedTeacherId,
             studentId: event.selectedStudentId,
             id: event._id,
-
+            courseId: event.courseId || null,
           };
         });
 
-        const timeSlots = generateTimeSlots();
-        setEvents([...timeSlots, ...loadedEvents]); // Combinez les tranches horaires avec les événements chargés
+        const timeSlots = generateTimeSlots(new Date()); // Utiliser la date sélectionnée
+        setEvents([...timeSlots, ...loadedEvents]);
         console.log("Événements mis à jour pour le calendrier:", [
           ...timeSlots,
           ...loadedEvents,
@@ -286,12 +381,12 @@ axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teach
       });
   }, []);
 
-
-  
   const deleteEvent = async (eventId) => {
     try {
-      await axiosPrivate.delete(`https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`);
-  
+      await axiosPrivate.delete(
+        `https://el-kindy-project-backend.onrender.com/planning/${selectedEventId}`
+      );
+
       const eventIndex = events.findIndex((evt) => evt._id === selectedEventId);
       if (eventIndex !== -1) {
         const updatedEvents = [...events];
@@ -305,58 +400,103 @@ axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teach
       console.error("Error deleting event", error);
     }
   };
-  
-
   const handleSelectSlot = ({ start, end, resourceId }) => {
     setSelectedEvent({ start, end, resourceId });
-    setShowModal(true);
+
+    // Vérifiez la disponibilité de l'enseignant pour chaque champ de calendrier sélectionné
+    const filteredTeachers = filterAvailableTeachers(start, end);
+
+    if (filteredTeachers.length === 0) {
+      setErrorMessage("Aucun enseignant disponible à ce moment.");
+      // Afficher un message d'erreur dans une boîte de dialogue
+      toast.error("Aucun enseignant disponible à ce moment.", {
+        autoClose: 3000,
+      });
+    } else {
+      setAvailableTeachers(filteredTeachers);
+      setShowModal(true);
+    }
   };
-  const addNewEvent = (event) => {
+
+  const addNewEvent = (event, repeatDays) => {
     setShowModal(false);
     const roomId = event.roomId;
     const roomExists = rooms.some((room) => room._id === roomId);
     const selectedCourse = courses.data.find(
       (course) => course._id === event.courseId
     );
-  
+
     // Vérifiez si selectedCourse est défini avant d'accéder à sa propriété title
     const courseTitle = selectedCourse
       ? selectedCourse.title
       : "Titre de cours non trouvé";
-  
-    const newEvent = {
-      id: events.length + 1, // Assurez-vous de donner un ID unique à chaque événement
-      title: `${event.title} `,
-      start: event.start,
-      end: event.end,
-      resourceId: roomId,
-      color: event.color, // Utiliser la couleur sélectionnée du Modal
-      teacherId: event.teacherId || null,
-      classId: event.classId || null,
-      studentId: event.studentId || null,
 
-      // Assurez-vous que la valeur de teacherId ou classId soit correctement définie en fonction de la logique de votre application
-    };
-  
-    console.log("Nouvel événement à sauvegarder :", newEvent);
-  
-    // Fusionner le nouvel événement avec les événements existants
-    const updatedEvents = [...events, newEvent];
-  
-    console.log("Evénements avant la sauvegarde :", events);
-  
+    // Créez un tableau pour stocker les nouveaux événements
+    const newEvents = [];
+
+    // Boucle pour créer des événements répétés pour chaque jour de la semaine entre la date de début et la date de fin
+    let currentDate = new Date(event.start.getTime()); // Commencez par la date de début
+    const endDate = new Date(event.end.getTime()); // Date de fin de l'événement initial
+
+    while (currentDate <= endDate) {
+      // Boucle pour répéter sur toutes les semaines de l'année
+      for (let i = 0; i < 52; i++) {
+        // Créez un nouvel événement avec les dates actuelles
+        const newEvent = {
+          id: events.length + 1, // Assurez-vous de donner un ID unique à chaque événement
+          title: event.title,
+          start: new Date(currentDate.getTime() + 7 * i * 24 * 60 * 60 * 1000), // Ajoutez i semaines
+          end: new Date(
+            currentDate.getTime() +
+              7 * i * 24 * 60 * 60 * 1000 +
+              (event.end - event.start)
+          ), // Durée de l'événement initial
+          resourceId: roomId,
+          color: event.color,
+          teacherId: event.teacherId || null,
+          classId: event.classId || null,
+          studentId: event.studentId || null,
+          courseId: event.courseId || null,
+        };
+
+        // Ajoutez le nouvel événement au tableau des nouveaux événements
+        newEvents.push(newEvent);
+      }
+
+      // Passez au jour suivant
+      currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Ajoutez 1 semaine
+    }
+
+    // Fusionner les nouveaux événements avec les événements existants
+    const updatedEvents = [...events, ...newEvents];
+
     // Mettre à jour les événements dans le state
     setEvents(updatedEvents);
-  
-    const response = axios.post("https://el-kindy-project-backend.onrender.com/planning/add", newEvent);
-    const addedEvent = response.data;
-  
-    // Mise à jour de l'état avec le nouvel événement
-    setEvents((prevEvents) => [...prevEvents, addedEvent]);
-    console.log("Nouvel événement ajouté avec succès:", addedEvent);
+
+    // Appel de l'API pour enregistrer les nouveaux événements
+    newEvents.forEach(async (newEvent) => {
+      const response = await axios.post(
+        "https://el-kindy-project-backend.onrender.com/planning/add",
+        newEvent
+      );
+      const addedEvent = response.data;
+      console.log("Nouvel événement ajouté avec succès:", addedEvent);
+    });
+
+    // Affichez un message de succès
+    toast.success("Événements ajoutés avec succès !!", {
+      autoClose: 1500,
+      style: {
+        color: "green",
+      },
+    });
+
+    // Rediriger ou recharger la page si nécessaire
+    setTimeout(() => {
+      navigate("/Planning");
+    }, 2000);
   };
-  
-  
+
   const formats = {
     timeGutterFormat: (date, culture, localizer) =>
       localizer.format(date, "HH[h]mm", culture),
@@ -375,87 +515,133 @@ axios.get(`https://el-kindy-project-backend.onrender.com/auth/getTeacher/${teach
   const addOrUpdateEvent = async (event) => {
     setShowModal(false);
     const roomId = event.resourceId;
-  
+    const courseId = event.courseId; // Assurez-vous que cette ligne est présente et correcte
+
     if (editEventDetails) {
       await updateEvent(event); // Passer l'ID de l'événement ici
     } else {
-      await addNewEvent({ ...event, id: Math.random().toString() });
+      await addNewEvent({ ...event, id: Math.random().toString(), courseId });
     }
     setEditEventDetails(null);
   };
-  
-
   return (
-    <div>
+    <div className="container-fluid">
       <SideBar />
       <main>
         <div className="page-content">
           <TopBarBack />
-          <div className="page-content-wrapper border">
-          <Calendar
-  components={{
-    event: MyEvent,
-  }}
-  key={events.length}
-  localizer={localizer}
-  events={events}
-  onSelectSlot={handleSelectSlot}
-  onSelectEvent={handleSelectEvent}
-  
-  onSave={addOrUpdateEvent} // Définissez onSave pour gérer à la fois l'ajout et la modification d'événements
-  selectable={true}
-  resourceIdAccessor="resourceId"
-  resourceTitleAccessor="resourceTitle"
-  defaultView="day"
-  min={new Date(0, 0, 0, 9, 0)}
-  max={new Date(0, 0, 0, 21, 0)}
-  step={30}
-  timeslots={1}
-  views={{ month: false, week: true, day: true }}
-  resources={rooms.map((room) => ({
-    resourceId: room._id,
-    resourceTitle: room.name,
-  }))}
-  startAccessor="start"
-  endAccessor="end"
-  dayLayoutAlgorithm={"overlap"}
-  style={{ height: "2500px" }}
-  formats={formats}
-  eventPropGetter={(event) => {
-    return { style: { backgroundColor: event.color } };
-  }}
-/>
-
-{showModal && (
- <Modal
- onClose={() => setShowModal(false)}
- onSave={addOrUpdateEvent}
- onDelete={deleteEvent} 
-
- eventDetails={{
-   ...selectedEvent,
-   rooms: rooms,
-   courses: courses,
-   classes: classes,
-
-   resourceId: selectedEvent.resourceId
- }}  onSelectEvent={(event) => {
-    console.log('Selected Event:', event);
-    handleSelectEvent(event);
-  }}
- courses={courses}
- teachers={teachers}
- students={students}
- classes={classes}
-
-/>
-
-)}
-
-
-
-
-          </div>
+          <ToastContainer />
+          {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
+          ) : error ? (
+            <h2>Error: {error}</h2>
+          ) : (
+            <div className="">
+              <Backdrop
+                sx={{
+                  color: "#fff",
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={open2}
+              >
+                <GridLoader color={color} loading={loading} size={20} />
+              </Backdrop>
+              {/* Enveloppez votre contenu principal dans un div ou un autre conteneur pour le style */}
+              <div className="page-content-wrapper border">
+                {/* Enveloppez votre calendrier dans un div pour le style */}
+                <div >
+                  {/* Ajoutez ici votre composant de calendrier */}
+                  <Calendar
+                    onNavigate={setCurrentDate} // Met à jour la date actuellement affichée lors de la navigation dans le calendrier
+                    date={currentDate} // Utilisez la date actuellement affichée dans le calendrier
+                    components={{
+                      event: MyEvent,
+                    }}
+                    key={events.length}
+                    localizer={localizer}
+                    events={[...events, ...timeSlots]} // Inclure les événements et les créneaux horaires
+                    onSelectSlot={handleSelectSlot}
+                    onSelectEvent={handleSelectEvent}
+                    onSave={addOrUpdateEvent}
+                    selectable={true}
+                    resourceIdAccessor="resourceId"
+                    resourceTitleAccessor="resourceTitle"
+                    defaultView="day"
+                    min={new Date(0, 0, 0, 9, 0)}
+                    max={new Date(0, 0, 0, 21, 0)}
+                    step={30}
+                    timeslots={1}
+                    views={{ month: true, week: false, day: true }}
+                    resources={rooms.map((room) => ({
+                      resourceId: room._id,
+                      resourceTitle: room.name,
+                      width: 8,
+                    }))}
+                    dayLayoutAlgorithm={"overlap"}
+                    style={{
+                      width: "1100px",
+                      fontSize: "10px",
+                    }} // Ajoutez fontSize ici
+                    formats={formats}
+                    eventPropGetter={(event) => {
+                      const color = event.color;
+                      return {
+                        style: {
+                          backgroundColor: color,
+                        },
+                      };
+                    }}
+                    toolbar={(toolbar) => {
+                      return {
+                        ...toolbar,
+                        next: null, // Supprime le bouton Next
+                        prev: null, // Supprime le bouton Back
+                      };
+                    }}
+                  />
+                  <div className="custom-toolbar">
+                    {/* Inclure d'autres éléments de la barre d'outils si nécessaire */}
+                  </div>
+                  {/* Affichez le modal à l'intérieur du conteneur du calendrier */}
+                  {showModal && (
+                    <Modal
+                      onClose={() => setShowModal(false)}
+                      onSave={addOrUpdateEvent}
+                      onDelete={deleteEvent}
+                      eventDetails={{
+                        ...selectedEvent,
+                        rooms: rooms,
+                        courses: courses,
+                        classes: classes,
+                        students: students,
+                        teachers: availableTeachers,
+                        resourceId: selectedEvent.resourceId,
+                      }}
+                      onSelectEvent={(event) => {
+                        handleSelectEvent(event);
+                      }}
+                      courses={courses}
+                      teachers={availableTeachers}
+                      students={students}
+                      classes={classes}
+                      toolbar={(toolbar) => {
+                        return {
+                          ...toolbar,
+                          next: true, // Réactiver le bouton Next
+                          prev: true, // Réactiver le bouton Back
+                        };
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

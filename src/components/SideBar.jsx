@@ -19,7 +19,12 @@ import {
   faCalendarAlt,
   faBriefcase,
   faSchool,
+  faShoppingCart,
+  faBirthdayCake,
+  faExclamationCircle,
+  faChalkboard
 } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 
 function SideBar() {
   const accessToken = useSelector((state) => state.accessToken);
@@ -27,6 +32,8 @@ function SideBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeNavItem, setActiveNavItem] = useState("");
+  const { t, i18n } = useTranslation();
+
 
   const isMembersActive = ["/admins", "/teachers", "/students"].includes(activeNavItem);
 
@@ -79,11 +86,13 @@ function SideBar() {
                     className={`nav-link ${activeNavItem === "/dashboard-admin" ? "active" : ""}`}
                     onClick={() => handleNavItemClick("/dashboard-admin")}>
                     <i className="bi bi-house fa-fw me-2" />
-                    Dashboard
+                    {t("sidebar.Dashboard")}
+
+                    
                   </Link>
                 </li>
                 {/* Title */}
-                <li className="nav-item ms-2 my-2">Pages</li>
+                <li className="nav-item ms-2 my-2">{t("sidebar.Pages")}</li>
 
                 {/* menu item 3 */}
                 <li className={`nav-item ${isMembersActive ? "active" : ""}`}>
@@ -96,7 +105,7 @@ function SideBar() {
                     aria-controls="collapsepageMembers"
                   >
                     <FontAwesomeIcon icon={faUsers} className="fa-fw me-1" />{" "}
-                    Members
+                    {t("sidebar.Members")}
                   </a>
 
                   {/* Submenu */}
@@ -116,7 +125,7 @@ function SideBar() {
                           icon={faUserShield}
                           className="fa-fw me-1"
                         />{" "}
-                        {/* Admin */}Admins
+                        {/* Admin */}{t("sidebar.Admins")}
                       </Link>
                     </li>
                     <li className="nav-item">
@@ -130,7 +139,7 @@ function SideBar() {
                           icon={faChalkboardTeacher}
                           className="fa-fw me-1"
                         />{" "}
-                        {/* Teacher */}Teachers
+                        {/* Teacher */}{t("sidebar.Teachers")}
                       </Link>
                     </li>
                     <li className="nav-item">
@@ -143,7 +152,7 @@ function SideBar() {
                           icon={faUserGraduate}
                           className="fa-fw me-1"
                         />{" "}
-                        {/* Student */}Students
+                        {/* Student */}{t("sidebar.Students")}
                       </Link>
                     </li>
 
@@ -161,7 +170,7 @@ function SideBar() {
                       icon={faClipboardList}
                       className="fa-fw me-1"
                     />{" "}
-                    {/* Preinscription */}Inscriptions
+                    {/* Preinscription */}{t("sidebar.Inscriptions")}
                   </Link>
                 </li>
                 {/* menu item category */}
@@ -171,7 +180,7 @@ function SideBar() {
                     className={`nav-link ${activeNavItem === "/listCategories" ? "active" : ""}`}
                     onClick={() => handleNavItemClick("/listCategories")}>
                     <FontAwesomeIcon icon={faTags} className="fa-fw me-1" />{" "}
-                    {/* Category Courses */}Category
+                    {/* Category Courses */}{t("sidebar.Category")}
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -179,10 +188,23 @@ function SideBar() {
                     to="/Planning"
                     className={`nav-link ${activeNavItem === "/Planning" ? "active" : ""}`}
                     onClick={() => handleNavItemClick("/Planning")}>
-                    <FontAwesomeIcon icon={faTags} className="fa-fw me-1" />{" "}
-                    {/* Category Courses */}Planning
+                    <FontAwesomeIcon icon={faCalendarAlt} className="fa-fw me-1" />{" "}
+                    {/* Category Courses */}{t("sidebar.Planning")}
                   </Link>
+
                 </li>
+                <li className="nav-item">
+                <Link
+                    to="/anniversaire"
+                    className={`nav-link ${activeNavItem === "/anniversaire" ? "active" : ""}`}
+                    onClick={() => handleNavItemClick("/anniversaire")}>
+                    <FontAwesomeIcon icon={faBirthdayCake} className="fa-fw me-1" />{" "}
+                    {/* Category Courses */}Anniversaire
+                  </Link>
+
+                </li>
+
+            
                 {/* menu item courses */}
                 <li className="nav-item">
                   <Link
@@ -193,23 +215,14 @@ function SideBar() {
                       icon={faGraduationCap}
                       className="fa-fw me-1"
                     />{" "}
-                    Courses
+                    {t("sidebar.Courses")}
                   </Link>
                 </li>
 
-                {/* menu item events */}
-                <li className="nav-item">
-                  <Link
-                    to="/ListStage"
-                    className={`nav-link ${activeNavItem === "/ListStage" ? "active" : ""}`}
-                    onClick={() => handleNavItemClick("/ListStage")}>
-                    <FontAwesomeIcon icon={faBriefcase} className="fa-fw me-1" />{" "}
-                    Internship
-                  </Link>
-                </li>
+                
 
                 {/* menu item events */}
-                <li className="nav-item">
+               <li className="nav-item">
                   <Link
                     to="/listEvents"
                     className={`nav-link ${activeNavItem === "/listEvents" ? "active" : ""}`}
@@ -218,9 +231,20 @@ function SideBar() {
                       icon={faCalendarAlt}
                       className="fa-fw me-1"
                     />{" "}
-                    Events
+                    {t("sidebar.Events")}
+                  </Link>
+                </li> 
+
+                <li className="nav-item">
+                  <Link
+                    to="/ListStage"
+                    className={`nav-link ${activeNavItem === "/ListStage" ? "active" : ""}`}
+                    onClick={() => handleNavItemClick("/ListStage")}>
+                    <FontAwesomeIcon icon={faBriefcase} className="fa-fw me-1" />{" "}
+                    {t("sidebar.Internship")}
                   </Link>
                 </li>
+
                 {/* menu item Reservation */}
                 <li className="nav-item">
                   <Link
@@ -231,24 +255,10 @@ function SideBar() {
                       icon={faTicketAlt}
                       className="fa-fw me-1"
                     />{" "}
-                    Event Reservations
+                    {t("sidebar.Event Reservations")}
                   </Link>
                 </li>
-
-
-                {/* menu item Reservation */}
-                <li className="nav-item">
-                  <Link
-                    to="/listReservation"
-                    className={`nav-link ${activeNavItem === "/listReservation" ? "active" : ""}`}
-                    onClick={() => handleNavItemClick("/listReservation")}>
-
-                    {/* menu item Reservation Stage*/}
-                  
-
-
-                  </Link>
-                </li>
+              
                 <li className="nav-item">
                       <Link
                         to="/AdminReservationStage"
@@ -258,7 +268,7 @@ function SideBar() {
                           icon={faTicketAlt}
                           className="fa-fw me-1"
                         />{" "}
-                        Internship Reservations
+                        {t("sidebar.Internship Reservations")}
                       </Link>
                     </li>
 
@@ -269,7 +279,17 @@ function SideBar() {
                     className={`nav-link ${activeNavItem === "/listClasse" ? "active" : ""}`}
                     onClick={() => handleNavItemClick("/listClasse")}>
                     <FontAwesomeIcon icon={faSchool} className="fa-fw me-1" />{" "}
-                    Salle
+                    {t("sidebar.Salle")}
+                  </Link>
+                </li>
+                {/* menu item shops */}
+                <li className="nav-item">
+                  <Link
+                    to="/BackListShop"
+                    className={`nav-link ${activeNavItem === "/BackListShop" ? "active" : ""}`}
+                    onClick={() => handleNavItemClick("/BackListShop")}>
+                    <FontAwesomeIcon icon={faShoppingCart} className="fa-fw me-1" />{" "}
+                    {t("sidebar.Instrument")}
                   </Link>
                 </li>
                 {/* menu item classess */}
@@ -278,39 +298,32 @@ function SideBar() {
                     to="/ListAllClasse"
                     className={`nav-link ${activeNavItem === "/ListAllClasse" ? "active" : ""}`}
                     onClick={() => handleNavItemClick("/ListAllClasse")}>
-                    <FontAwesomeIcon icon={faSchool} className="fa-fw me-1" />{" "}
-                    Classes
+                    <FontAwesomeIcon icon={faChalkboard} className="fa-fw me-1" />{" "}
+                    {t("sidebar.Classes")}
                   </Link>
                 </li>
-                {/* Menu item 9 */}
+                {/* menu item classess */}
                 <li className="nav-item">
-                  {" "}
-                  <a className="nav-link" href="#">
-                    <i className="far fa-clipboard fa-fw me-2" />
-                    Documentation
-                  </a>
-                </li>
-
-                {/* Menu item 6 */}
-                <li className="nav-item">
-                  {" "}
-                  <a className="nav-link" href="#">
-                    <i className="far fa-chart-bar fa-fw me-2" />
-                    Earnings
-                  </a>
+                  <Link
+                    to="/ContactBack"
+                    className={`nav-link ${activeNavItem === "/ContactBack" ? "active" : ""}`}
+                    onClick={() => handleNavItemClick("/ContactBack")}>
+                    <FontAwesomeIcon icon={faExclamationCircle} className="fa-fw me-1" />{" "}
+                    Claims
+                  </Link>
                 </li>
                 {/* Menu item 7 */}
                 <li className="nav-item">
                   {" "}
                   <a className="nav-link" href="#">
                     <i className="fas fa-user-cog fa-fw me-2" />
-                    Account Settings
+                    {t("sidebar.Account Settings")}
                   </a>
                 </li>
               </ul>
-              {/* Sidebar menu end */}</div>
+              {/* Sidebar menu end */}
             {/* Sidebar footer START */}
-            <div className="px-3 mt-auto pt-3">
+            <div className="px-3 mt-auto pt-3 ">
               <div className="d-flex align-items-center justify-content-between text-primary-hover">
                 <Link
                   className="h5 mb-0 text-body"
@@ -332,6 +345,7 @@ function SideBar() {
                   <i className="bi bi-power" />
                 </a>
               </div>
+            </div>
             </div>
             {/* Sidebar footer END */}
           </div>

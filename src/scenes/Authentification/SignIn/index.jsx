@@ -38,6 +38,8 @@ function Index() {
   let [color, setColor] = useState("#399ebf");
 
   const [open, setOpen] = useState(false);
+  const [showTokenInput, setShowTokenInput] = useState(false); // State to manage visibility of token input
+
 
   const toastShowError = (msg) => {
     toast.error(msg, {
@@ -85,10 +87,17 @@ function Index() {
         toastShowError(loggedIn.message);
         setOpen(false);
       } else if (loggedInResponse.status === 401) {
-        toastShowWarning(loggedIn.message);
-        setOpen(false);
-        dispatch(setLogout()); // Logout on refresh token error
+        if (loggedIn.error === "Invalid token for 2FA") {
+          // If the error is due to invalid 2FA token, show the token input box
+          setShowTokenInput(true);
+          setOpen(false);
+        } else {
+          toastShowWarning(loggedIn.message);
+          setOpen(false);
+          dispatch(setLogout()); // Logout on refresh token error
+        }
       } else if (loggedInResponse.status === 200) {
+        console.log("accessToken", loggedIn.accessToken);
         console.log("logged successfully!!");
         setOpen(false);
         dispatch(
@@ -233,6 +242,21 @@ function Index() {
                           </Link>
                         </div>
                       </div>
+                      {/* Token input box */}
+                      {showTokenInput && (
+                        <div className="mb-4">
+                          <label htmlFor="inputToken" className="form-label">
+                            2FA Token *
+                          </label>
+                          <input
+                            type="text"
+                            name="tokens"
+                            className="form-control border-0 bg-light rounded-end ps-1"
+                            placeholder="Enter 2FA token"
+                            id="inputToken"
+                          />
+                        </div>
+                      )}
                       {/* Button */}
                       <div className="align-items-center mt-0">
                         <div className="d-grid">

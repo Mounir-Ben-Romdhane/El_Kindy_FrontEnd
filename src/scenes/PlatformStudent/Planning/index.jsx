@@ -8,10 +8,12 @@ import NavBar from "components/NavBar";
 import SideBarStudent from "components/SideBarStudent";
 import TopBarTeacherStudent from "components/TopBarTeacherStudent";
 import useAxiosPrivate from "hooks/useAxiosPrivate";
-import Footer from "components/Footer";
+import FooterClient from "components/Footer";
 import { useSelector } from "react-redux"; // Importez useSelector depuis React Redux
 import { jwtDecode } from "jwt-decode";
 import EventDetailsModal from './EventDetailsModal';
+import Backdrop from "@mui/material/Backdrop";
+import GridLoader from "react-spinners/GridLoader";
 
 const localizer = momentLocalizer(moment);
 const MyCalendar = () => {
@@ -19,7 +21,7 @@ const MyCalendar = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState({});
-  const [courses, setCourses] = useState([]); // Ajoutez un état pour stocker les cours
+  const [courses, setCourses] = useState({ data: [] });
   const [teachers, setTeachers] = useState([]); // Ajout d'un état pour les enseignants
   const [students, setStudents] = useState([]); // Ajout d'un état pour les étudiants
   const [loadingTeachers, setLoadingTeachers] = useState(true);
@@ -28,6 +30,11 @@ const MyCalendar = () => {
   const [studentsData, setStudentsData] = useState([]); // Renommer l'état pour éviter la redondance
 
   const axiosPrivate = useAxiosPrivate();
+  let [color, setColor] = useState("#399ebf");
+  const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const accessToken = useSelector((state) => state.accessToken); // Récupérez le jeton d'accès du store Redux
   const decodeToken = accessToken ? jwtDecode(accessToken) : "";
@@ -36,11 +43,13 @@ const MyCalendar = () => {
     try {
       const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/${event.id}/details`);
       const courseDetails = response.data;
-      
-      setSelectedEvent(courseDetails);
+
+        console.log("aaaa",event)
+
+      const updatedEvent = { ...event}; // Add teacherId to the event object
+      setSelectedEvent(updatedEvent);
       setShowModal(true); // Add this line
       console.log("showModal set to true");
-      
     } catch (error) {
       console.error("Erreur lors de la récupération des détails du cours", error);
     }
@@ -51,6 +60,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchPlannings = async () => {
       try {
+        setOpen(true);
         const response = await axios.get(`https://el-kindy-project-backend.onrender.com/planning/student/${decodeToken.id}`, {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
@@ -58,6 +68,8 @@ const MyCalendar = () => {
         });
         setEvents(response.data.map((planning) => ({
           id: planning._id,
+          courseId: planning.courseId,
+
           title: planning.title,
           start: new Date(planning.start),
           end: new Date(planning.end),
@@ -66,20 +78,22 @@ const MyCalendar = () => {
           teacherId: planning.teacherId,
           studentId: planning.studentId,
         })));
+        setOpen(false);
       } catch (error) {
+        setOpen(false);
         console.error('Erreur lors de la récupération des plannings', error);
         // Affichez un message d'erreur à l'utilisateur ou effectuez d'autres actions en cas d'erreur
       }
     };
   
     fetchPlannings();
-  }, [accessToken, decodeToken.id]);
+  }, []);
   
 
 
 
   useEffect(() => {
-    axios
+    axiosPrivate
       .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
@@ -87,7 +101,7 @@ const MyCalendar = () => {
       .catch((error) => {
         console.error("There was an error fetching the rooms", error);
       });
-      axios
+      axiosPrivate
       .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
@@ -97,15 +111,16 @@ const MyCalendar = () => {
         console.error("There was an error fetching the courses", error);
       });
   
-    axios
-      .get("https://el-kindy-project-backend.onrender.com/auth/teachers")
-      .then((response) => {
-        setTeachers(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the teachers", error);
-      });
-  
+  axios.get("https://el-kindy-project-backend.onrender.com/auth/teachers")
+    .then((response) => {
+      setTeachers(response.data);
+      console.log(response.data); // Vérifiez les données de l'enseignant récupérées
+    })
+    .catch((error) => {
+      console.error("There was an error fetching the teachers", error);
+    });
+
+
     axios
       .get("https://el-kindy-project-backend.onrender.com/auth/students")
       .then((response) => {
@@ -118,7 +133,7 @@ const MyCalendar = () => {
   
 
   useEffect(() => {
-    axios
+    axiosPrivate
       .get("https://el-kindy-project-backend.onrender.com/salle")
       .then((response) => {
         setRooms(response.data);
@@ -127,7 +142,7 @@ const MyCalendar = () => {
         console.error("There was an error fetching the rooms", error);
       });
 
-      axios
+      axiosPrivate
       .get("https://el-kindy-project-backend.onrender.com/course/all")
       .then((response) => {
         setCourses(response.data);
@@ -146,7 +161,7 @@ const MyCalendar = () => {
     setShowModal(false);
     const roomId = event.roomId;
     const roomExists = rooms.some((room) => room._id === roomId);
-    const selectedCourse = courses.data.find((course) => course._id === event.courseId);
+    const course = courses.data.find((s) => s._id === event.courseId);
 
     if (!roomExists) {
       console.error("L'ID de la salle spécifiée n'existe pas.");
@@ -173,11 +188,13 @@ const MyCalendar = () => {
   const MyEvent = ({ event }) => {
     const teacher = teachers.find((t) => t._id === event.teacherId);
     const student = students.find((s) => s._id === event.studentId);
-    {/*const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}`: "Enseignant inconnu";*/}
+    const course = courses.data.find((s) => s._id === event.courseId);
+
+    const courseName = course ? `${course.title}` : "";
 
     return (
       <div>
-        <strong>{event.title}</strong>
+        <strong>{courseName}</strong>
         {/*<div>Teacher: {teacherName}</div>*/}
       </div>
     );
@@ -194,12 +211,24 @@ const MyCalendar = () => {
             <div className="row">
               <SideBarStudent />
               <div className="col-xl-9">
+              {open ? (
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={open}
+            >
+              <GridLoader color={color} loading={loading} size={20} />
+            </Backdrop>
+          ) : error ? (
+            <h2>Error: {error}</h2>
+          ) : (
                 <div className="card border bg-transparent rounded-3">
                   <div className="card-body">
                     <div className="d-sm-flex">
-                      <div>
-                        <div className="mb-3 d-sm-flex justify-content-sm-between">
-                          <div>
+                        <div style={{
+                      overflowX: 'auto', // Horizontal scroll
+                      overflowY: 'auto', // Vertical scroll
+                      maxHeight: '700px', // Maximum height before vertical scroll
+                    }}>
                             <Calendar
                               components={{
                                 event: MyEvent,
@@ -226,25 +255,29 @@ const MyCalendar = () => {
                               startAccessor="start"
                               endAccessor="end"
                               dayLayoutAlgorithm={'overlap'} // Ajustez la taille des cases en fonction des événements qui se chevauchent
-                              style={{ height: '700px', width: "70%"  }} // Augmentez la hauteur du calendrier pour afficher plus de cases
-                                                        formats={formats}
+                              style={{ width: '100%', minHeight: '700px' }} // Ensure full width and sufficient height
+                              formats={formats}
                               eventPropGetter={(event) => ({
                                 style: { backgroundColor: event.color },
                               })}
                             />
                            {console.log("Selected Event:", selectedEvent)}
                            {showModal && (
-  <EventDetailsModal
-    onClose={() => setShowModal(false)}
-    event={selectedEvent}
-    roomId={selectedEvent.resourceId}
-    rooms={rooms}
-  />
-)}
+                            <EventDetailsModal
+                              onClose={() => setShowModal(false)}
+                              event={selectedEvent}
+                              roomId={selectedEvent.resourceId}
+                              courseId={selectedEvent.courseId}
+                              teachers={teachers}
+                              teacherId={selectedEvent.teacherId}
+
+                              rooms={rooms}
+                              courses={courses} // Pass courseName as prop
+                            />
+                          )}
 
 
-                          </div>
-                        </div>
+                          
                         <div className="text-end"></div>
                       </div>
                     </div>
@@ -252,11 +285,12 @@ const MyCalendar = () => {
                     <div></div>
                   </div>
                 </div>
+          )}
               </div>
             </div>
           </div>
         </section>
-        <Footer />
+        <FooterClient />
 
       </main>
     </div>

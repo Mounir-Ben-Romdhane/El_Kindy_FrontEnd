@@ -6,83 +6,185 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-notifications/lib/notifications.css";
 import { Link, useNavigate } from "react-router-dom";
+import useAxiosPrivate from "hooks/useAxiosPrivate";
+import { GridLoader } from "react-spinners";
+import Backdrop from "@mui/material/Backdrop";
 
 function AddEvent() {
   const [isPaid, setIsPaid] = useState(false);
-const [isFree, setIsFree] = useState(false);
+  const [isFree, setIsFree] = useState(true);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    dateDebut: "",
+    dateFin: "",
+    timeFrom: "",
+    timeTo: "",
+    place: "",
+    price : 0,
+    imageFile: null,
+  });
+  const [errors, setErrors] = useState({});
+  let [color, setColor] = useState("#399ebf");
+  const [open, setOpen] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  
+  const axiosPrivate = useAxiosPrivate();
 
-  // State to hold the image name
-  const [imageName, setImageName] = useState(null);
-  // State to hold the image file
-  const [imageFile, setImageFile] = useState(null);
-
-  const [place, setPlace] = useState(""); // New state for place
-  const [timeFrom, setTimeFrom] = useState(""); // New state for time from
-  const [timeTo, setTimeTo] = useState(""); // New state for time to
-
-  // Function to handle selecting an image
   const handleImageSelect = (event) => {
-    // Get the selected file
     const selectedFile = event.target.files[0];
-    // Set the image name
-    setImageName(selectedFile.name);
-    // Set the image file
-    setImageFile(selectedFile);
+    setFormData({ ...formData, picture: selectedFile });
+
+    // Remove red border when an image is selected
+    event.target.parentElement.classList.remove("border-danger");
+
+    // Check if a picture is selected and update the error status
+    if (!selectedFile) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "Please upload an image!",
+      }));
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "",
+      }));
+    }
   };
 
-  // Function to handle removing the image
   const handleRemoveImage = () => {
-    // Reset the image name to null
-    setImageName(null);
-    // Reset the image file
-    setImageFile(null);
-    // Reset the input field value to allow selecting the same file again
+    setFormData({ ...formData, picture: null });
     document.getElementById("image").value = "";
+
+    // Update the error status for the picture field
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      picture: "Please upload an image!",
+    }));
+
+    // Add red border if no image is selected after removal
+    document
+      .getElementById("image")
+      .parentElement.classList.add("border-danger");
   };
 
+  const validateField = (name, value) => {
+    let error = "";
+    switch (name) {
+      case "title":
+        error = value.trim() === "" ? "Please enter a course title !" : "";
+        break;
+      case "description":
+        error = value.trim() === "" ? "Please enter a short description !" : "";
+        break;
+      case "picture":
+        error = value === null ? "Please upload an image !" : "";
+        break;
+      case "dateDebut":
+        error = value === "" ? "Please select a course category !" : "";
+        break;
+      case "dateFin":
+        error = value === "" ? "Please select a course level !" : "";
+        break;
+      case "price":
+        if(isPaid) {
+          error = value === 0 || value === null || value < 0 ? "Please add a price !" : "";
+          break;
+        }
+        break;
+      case "place":
+        error = value === "" ? "Please select a course category !" : "";
+        break;
+      case "timeFrom":
+        error = value === "" ? "Please select a course level !" : "";
+        break;
+      case "timeTo":
+        error = value === "" ? "Please select a course level !" : "";
+        break;
+      default:
+        break;
+    }
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
+  };
+
+  //const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const addEvent = async (values, onSubmitProps) => {
-    console.log("values", values);
-    // this allow us to send form info with image
-    const formData = new FormData();
-    for (let value in values) {
-      formData.append(value, values[value]);
+  const addEvent = async () => {
+    const formDataToSend = new FormData();
+    for (let key in formData) {
+      formDataToSend.append(key, formData[key]);
     }
-    formData.append("picturePath", values.picture.name);
     console.log("formData", formData);
-    console.log("picture name", values.picture.name);
 
-    const savedEventResponse = await fetch("https://el-kindy-project-backend.onrender.com/event/add", {
-      method: "POST",
-      body: formData,
-    });
-    const savedEvent = await savedEventResponse.json();
+    // Append picturePath to the form data
+    formDataToSend.append("picturePath", formData.picture.name);
 
-    if (savedEvent) {
-      console.log("Event added!");
-      console.log("Event", savedEvent);
+    try {
+      setOpen2(true);
+
+      const response = await axiosPrivate.post("/event/add", formDataToSend);
+      //const savedCourse = response.data;
+      //console.log("Event added!");
+      //console.log("Course", savedCourse);
       // Show the toast notification with autoClose: false
-      toast.success("Event added successfully !!", {
-        autoClose: 1500,
-        style: {
-          color: "green", // Text color
-        },
-      });
-      setTimeout(() => {
-        navigate("/listEvents");
-      }, 2000);
+      if(response.status === 201) {
+        toast.success("Event added successfully !!", {
+          autoClose: 1000,
+          style: {
+            color: "green", // Text color
+          },
+        });
+        setOpen2(false);
+
+        setTimeout(() => {
+          navigate("/listEvents");
+        }, 1500);
+      }
+      
+    } catch (error) {
+      setOpen2(false);
+
+      console.error("Error adding course:", error);
+      // Handle error
+      toast.error("Failed to add course. Please try again.");
     }
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
     values.preventDefault();
-    const formData = new FormData(values.target); // Create FormData object from form
-    const formValues = Object.fromEntries(formData.entries()); // Convert FormData to plain object
-    await addEvent(formValues, onSubmitProps);
+
+    // Validate fields
+    for (let [key, value] of Object.entries(formData)) {
+      validateField(key, value);
+    }
+
+    // Check if there are any errors
+    if (Object.values(errors).some((error) => error !== "")) {
+      return;
+    }
+
+    // Check if an image is selected
+    if (!formData.picture) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        picture: "Please upload an image!",
+      }));
+      // Add red border if no image is selected
+      document
+        .getElementById("image")
+        .parentElement.classList.add("border-danger");
+      return;
+    }
+    await addEvent();
   };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    validateField(name, value);  };
+
 
   return (
     <div>
@@ -90,6 +192,15 @@ const [isFree, setIsFree] = useState(false);
       <main>
         <div className="page-content">
           <TopBarBack />
+          <Backdrop
+                sx={{
+                  color: "#fff",
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={open2}
+              >
+                <GridLoader color={color} loading={loading} size={20} />
+              </Backdrop>
           <ToastContainer />
           <div className="page-content-wrapper border">
             <BannerStart
@@ -105,74 +216,108 @@ const [isFree, setIsFree] = useState(false);
               <form onSubmit={handleFormSubmit} className="m-4">
                 <div className="row g-4">
                   <div className="col-12">
-                    <label className="form-label">Event Title</label>
+                    <label className="form-label">
+                      Event Title <span className="text-danger">*</span>
+                    </label>
                     <input
-                      className="form-control"
+                      className={`form-control ${
+                        errors.title ? "is-invalid" : ""
+                      }`}
                       type="text"
                       name="title"
                       placeholder="Enter Event title"
-                      required
+                      onChange={handleChange}
                     />
+                    {errors.title && (
+                      <div className="invalid-feedback">{errors.title}</div>
+                    )}{" "}
                   </div>
                   <div className="col-12">
-                    <label className="form-label">Short Description</label>
+                    <label className="form-label">
+                      Short Description <span className="text-danger">*</span>
+                    </label>
                     <textarea
-                      className="form-control"
+                      className={`form-control ${
+                        errors.description ? "is-invalid" : ""
+                      }`}
                       name="description"
                       rows={2}
                       placeholder="Short description of the event"
-                      required
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.description}</div>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Start Date</label>
+                    <label className="form-label">
+                      Start Date <span className="text-danger">*</span>
+                    </label>
                     <input
-                      className="form-control"
+                      className={
+                        "form-control" + (errors.dateDebut ? " is-invalid" : "")
+                      }
                       type="date"
                       name="dateDebut"
-                      required
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.dateDebut}</div>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">End Date</label>
+                    <label className="form-label">
+                      End Date <span className="text-danger">*</span>
+                    </label>
                     <input
-                      className="form-control"
+                      className={
+                        "form-control" + (errors.dateFin ? " is-invalid" : "")
+                      }
                       type="date"
                       name="dateFin"
-                      required
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.dateFin}</div>
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Time From</label>
+                    <label className="form-label">
+                      Time From <span className="text-danger">*</span>
+                    </label>
                     <input
                       type="time"
-                      className="form-control"
+                      className={
+                        "form-control" + (errors.timeFrom ? " is-invalid" : "")
+                      }
                       name="timeFrom"
-                      value={timeFrom}
-                      onChange={(e) => setTimeFrom(e.target.value)}
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.timeFrom}</div>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Time To</label>
+                    <label className="form-label">
+                      Time To <span className="text-danger">*</span>{" "}
+                    </label>
                     <input
                       type="time"
-                      className="form-control"
+                      className={
+                        "form-control" + (errors.timeTo ? " is-invalid" : "")
+                      }
                       name="timeTo"
-                      value={timeTo}
-                      onChange={(e) => setTimeTo(e.target.value)}
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.timeTo}</div>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Place</label>
+                    <label className="form-label">
+                      Place <span className="text-danger">*</span>
+                    </label>
                     <input
                       type="text"
-                      className="form-control"
+                      className={
+                        "form-control" + (errors.place ? " is-invalid" : "")
+                      }
                       name="place"
                       placeholder="Enter event place"
-                      value={place}
-                      onChange={(e) => setPlace(e.target.value)}
+                      onChange={handleChange}
                     />
+                    <div className="invalid-feedback">{errors.place}</div>
                   </div>
                   {/*  <div className="col-md-6">
                     <label className="form-label">Event Price</label>
@@ -184,79 +329,99 @@ const [isFree, setIsFree] = useState(false);
                     />
                   </div> */}
 
-<div className="col-md-6 event-price-container">
-  <label htmlFor="paidCheckbox" className="form-label">
-    Event Price
-  </label>
-  <div className="price-toggle">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      id="paidCheckbox"
-      checked={isPaid}
-      onChange={() => {
-        setIsPaid(!isPaid);
-        setIsFree(false); // Uncheck the free option when paid is selected
-      }}
-    />
-    <label className="form-check-label" htmlFor="paidCheckbox">
-      Paid
-    </label>
-  </div>
-  {isPaid && (
-    <input
-      type="number"
-      className="form-control price-input"
-      name="price"
-      placeholder="Enter event price"
-    />
-  )}
+                  <div className="col-md-6 event-price-container">
+                    <label htmlFor="paidCheckbox" className="form-label">
+                      Event Price <span className="text-danger">*</span>
+                    </label>
+                    <div className="price-toggle">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="paidCheckbox"
+                        checked={isPaid}
+                        onChange={() => {
+                          setIsPaid(!isPaid);
+                          setIsFree(false); // Uncheck the free option when paid is selected
+                        }}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="paidCheckbox"
+                      >
+                        Paid
+                      </label>
+                    </div>
+                    {isPaid && (
+                      <div >
+                      <input
+                        type="number"
+                        className={
+                          "form-control price-input" + (errors.price ? " is-invalid" : "")
+                        }
+                        name="price"
+                        onChange={handleChange}
+                        placeholder="Enter event price"
+                      />
+                      <div className="invalid-feedback">{errors.price}</div>
+                      </div>
+                    )}
 
-  <div className="price-toggle mt-2">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      id="freeCheckbox"
-      checked={isFree}
-      onChange={() => {
-        setIsFree(!isFree);
-        setIsPaid(false); // Uncheck the paid option when free is selected
-      }}
-    />
-    <label className="form-check-label" htmlFor="freeCheckbox">
-      Free
-    </label>
-  </div>
-</div>
+
+                    <div className="price-toggle mt-2">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="freeCheckbox"
+                        checked={isFree}
+                        onChange={() => {
+                          setIsFree(!isFree);
+                          setIsPaid(false); // Uncheck the paid option when free is selected
+                        }}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="freeCheckbox"
+                      >
+                        Free
+                      </label>
+                    </div>
+                  </div>
+                  {/* Upload image START */}
                   {/* Upload image START */}
                   <div className="m-4">
-                    {/* Image */}
                     <div className="col-12">
-                      <div className="text-center justify-content-center align-items-center mx-5 my-5 p-sm-5 border border-2 border-dashed position-relative rounded-3">
-                        {/* Display the image */}
-                        {imageFile && (
+                      <div
+                        className={`text-center justify-content-center align-items-center mx-5 my-5 p-sm-5 border border-2 border-dashed position-relative rounded-3 ${
+                          errors.picture ? "border-danger" : ""
+                        }`}
+                      >
+                        {formData.picture && (
                           <div>
                             <img
-                              src={URL.createObjectURL(imageFile)}
+                              src={URL.createObjectURL(formData.picture)}
                               alt="Uploaded image"
-                              className="img-fluid mb-2"
-                              style={{ maxWidth: "300px", maxHeight: "300px" }} // Limit image dimensions
+                              className="img-fluid p-2 mb-2"
+                              style={{
+                                maxWidth: "100%", // This makes the image responsive
+                                maxHeight: "300px",
+                                height: "auto", // Maintain aspect ratio
+                                width: "auto", // Allow width to scale with the height
+                                objectFit: "contain", // Ensures the image is scaled to maintain its aspect ratio while fitting within the frame
+                              }}
                             />
                             <p className="mb-0">Uploaded image</p>
                           </div>
                         )}
-                        {/* Upload image button */}
                         <div className="mb-3">
                           <h6 className="my-2">
-                            Upload Event image here, or{" "}
+                            Upload course image here, or{" "}
                             <span
                               className="text-primary"
                               style={{ cursor: "pointer" }}
                             >
-                              Browse
+                              Browse <span className="text-danger">*</span>
                             </span>
                           </h6>
-                          {/* File input */}
                           <input
                             className="form-control"
                             type="file"
@@ -265,7 +430,6 @@ const [isFree, setIsFree] = useState(false);
                             accept="image/gif, image/jpeg, image/png"
                             onChange={handleImageSelect}
                           />
-                          {/* Note */}
                           <p className="small mb-0 mt-2">
                             <b>Note:</b> Only JPG, JPEG, and PNG formats are
                             supported. Our suggested dimensions are 600px *
@@ -273,8 +437,7 @@ const [isFree, setIsFree] = useState(false);
                             thumbnails/previews.
                           </p>
                         </div>
-                        {/* Remove image button */}
-                        {imageName && (
+                        {formData.picture && (
                           <div className="d-sm-flex justify-content-end mt-2">
                             <button
                               type="button"

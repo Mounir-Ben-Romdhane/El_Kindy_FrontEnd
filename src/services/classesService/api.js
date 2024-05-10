@@ -1,6 +1,5 @@
-import { axiosPrivate } from "api/axios";
 
-export const getAllClasses = async (id) => {
+export const getAllClasses = async (axiosPrivate) => {
     const reponse = await axiosPrivate.get(`/classes/getAll`);
     return reponse;
 }

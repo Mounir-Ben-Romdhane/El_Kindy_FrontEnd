@@ -1,5 +1,5 @@
 import BannerStartHome from 'components/BannerStartHome'
-import Footer from 'components/Footer'
+import FooterClient from "components/FooterClient"
 import NavBar from 'components/NavBar'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
@@ -14,8 +14,9 @@ function DetailsCourse() {
     useEffect(() => {
         const  fetchData = async () => {
         try {
-            const course = await axios.get("/course/"+id);
-            setCourse(course.data);
+            const course = await axios.get("/course/findCourseById/"+id);
+            //console.log("course:", course.data.course);
+            setCourse(course.data.course);
         }catch (err) {
             console.log(err);
         }
@@ -88,7 +89,7 @@ Main Banner START */}
         
         
         {/* Image */}
-        <img src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`} className="rounded-3 z-index-1 position-relative w-500px h-420px" alt="Tutor image" />
+        <img src={`https://el-kindy-project-backend.onrender.com/assets/${course.picturePath}`} className="rounded-3 z-index-1 position-relative w-400px h-450px" alt="Tutor image" />
       </div>
       {/* Right content END */}
     </div>
@@ -111,7 +112,7 @@ Main Banner END */}
 
 
         </div>
-        <Footer />
+        <FooterClient />
     </>
   )
 }

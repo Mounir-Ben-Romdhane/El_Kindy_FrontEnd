@@ -1,12 +1,84 @@
-import { width } from '@mui/system'
-import BannerStartHome from 'components/BannerStartHome'
-import Footer from 'components/Footer'
-import NavBar from 'components/NavBar'
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import '../../scenes/Style.css' 
-
+import axios from "axios";
+import Swal from "sweetalert2";
+import NavBar from "components/NavBar";
+import BannerStartHome from "components/BannerStartHome";
+import FooterClient from "components/FooterClient";
 function ContactPage() {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    message: "",
+  });
+  const [errors, setErrors] = useState({});
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  
+    // Check if the email is valid
+    if (name === "email") {
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: isValidEmail ? "" : "Please enter a valid email address.",
+      }));
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: value.trim() ? "" : `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`,
+      }));
+    }
+  };
+  
+
+  const handleSubmit = async () => {
+   
+    // Validation checks
+    const errors = {};
+    if (!formData.fullName) {
+      errors.fullName = "Full Name is required.";
+    }
+    if (!formData.email) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!formData.email) {
+      errors.message = "Message is required.";
+    }
+
+    // Update the errors state
+    setErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      try {
+        const response = await axios.post("https://el-kindy-project-backend.onrender.com/contact", formData);
+        console.log(response.data);
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Your message has been received.",
+        });
+        setFormData({
+          fullName: "",
+          email: "",
+          message: "",
+        });
+      } catch (error) {
+        console.error("Error sending message:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Something went wrong!",
+        });
+      }
+    }
+  };
+
+
   return (
         <>
       <NavBar />
@@ -22,7 +94,10 @@ Page Banner START */}
 Page Banner END */}
   {/* =======================
 Page Banner START */}
+
+
   <section className="pt-5 pb-0" style={{backgroundImage: 'url(assets/images/element/map.svg)', backgroundPosition: 'center left', backgroundSize: 'cover'}}>
+
     <div className="container">
       {/* Contact info box */}
       <div className="row g-4 g-md-5 mt-0 mt-lg-3">
@@ -144,34 +219,73 @@ Image and contact form START */}
             </ul>
           </div>
         </div>
-        {/* Contact form START */}
-        <div className="col-md-6">
-          {/* Title */}
-          <h2 className="mt-4 mt-md-0">Let's talk</h2>
-          <p>To request a quote or want to meet up for coffee, contact us directly or fill out the form and we will get back to you promptly</p>
-          <form>
-            {/* Name */}
-            <div className="mb-4 bg-light-input">
-              <label htmlFor="yourName" className="form-label">Your name *</label>
-              <input type="text" className="form-control form-control-lg" id="yourName" />
-            </div>
-            {/* Email */}
-            <div className="mb-4 bg-light-input">
-              <label htmlFor="emailInput" className="form-label">Email address *</label>
-              <input type="email" className="form-control form-control-lg" id="emailInput" />
-            </div>
-            {/* Message */}
-            <div className="mb-4 bg-light-input">
-              <label htmlFor="textareaBox" className="form-label">Message *</label>
-              <textarea className="form-control" id="textareaBox" rows={4} defaultValue={""} />
-            </div>
-            {/* Button */}
-            <div className="d-grid">
-              <button className="btn btn-lg btn-primary mb-0" type="button">Send Message</button>
-            </div>	
-          </form>
-        </div>
-        {/* Contact form END */}
+       {/* Contact form START */}
+       <div className="col-md-6">
+                <h2 className="mt-4 mt-md-0">Let's talk</h2>
+                <p>To request a quote or want to meet up for coffee, contact us directly or fill out the form and we will get back to you promptly</p>
+                <form>
+                  {/* Full Name */}
+                  <div className="mb-4 bg-light-input">
+                    <label htmlFor="yourName" className="form-label">Your name *</label>
+                    <input
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      type="text"
+                      className={`form-control form-control-lg ${errors.fullName ? "is-invalid" : ""}`}
+                      id="yourName"
+                      required
+                    />
+                    {errors.fullName && (
+                      <div className="invalid-feedback">{errors.fullName}</div>
+                    )}
+                  </div>
+                  {/* Email */}
+                  <div className="mb-4 bg-light-input">
+                    <label htmlFor="emailInput" className="form-label">Email address *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`form-control form-control-lg ${errors.email ? "is-invalid" : ""}`}
+                      id="emailInput"
+                      required
+                      pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                    />
+                    {errors.email && (
+                      <div className="invalid-feedback">{errors.email}</div>
+                    )}
+                  </div>
+                  {/* Message */}
+                  <div className="mb-4 bg-light-input">
+                    <label htmlFor="textareaBox" className="form-label">Message *</label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.message ? "is-invalid" : ""}`}
+                      id="textareaBox"
+                      rows={4}
+                      required
+                    />
+                    {errors.message && (
+                      <div className="invalid-feedback">{errors.message}</div>
+                    )}
+                  </div>
+                  {/* Button */}
+                  <div className="d-grid">
+                    <button
+                      className="btn btn-lg btn-primary mb-0"
+                      onClick={handleSubmit}
+                      type="button"
+                    >
+                      Send Message
+                    </button>
+                  </div>
+                </form>
+              </div>
+              {/* Contact form END */}
       </div>
     </div>
   </section>
@@ -193,7 +307,7 @@ Map END */}
 </main>
 {/* **************** MAIN CONTENT END **************** */}
 
-      <Footer />
+      <FooterClient />
       </>
   )
 }
