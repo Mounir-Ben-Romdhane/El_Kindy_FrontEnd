@@ -83,9 +83,7 @@ function Index() {
                   <h2>Error: {error}</h2>
                 ) : (
                   <div className="card bg-transparent border-2 rounded-3">
-                    {/* Counter boxes START */}
-                    <div className="m-3">
-                    <div className="card bg-transparent border-2 rounded-3">
+                    
                     {/* Counter boxes START */}
                     <div className="m-3">
                     <div
@@ -106,9 +104,7 @@ function Index() {
                    />
                  </div>
                     </div>
-                    {/* Counter boxes END */}
-                  </div>
-                    </div>
+                   
                     {/* Counter boxes END */}
                   </div>
                 )}
