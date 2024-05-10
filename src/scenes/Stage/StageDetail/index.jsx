@@ -91,6 +91,7 @@ function Index() {
   
       const response = await axios.post(url, dataToSend);
       console.log("Reservation response:", response.data);
+      navigate("/stage");
       toast.success("Reservation successful!", {
         onClose: () => navigate("/stage"),
         autoClose: 2000,
