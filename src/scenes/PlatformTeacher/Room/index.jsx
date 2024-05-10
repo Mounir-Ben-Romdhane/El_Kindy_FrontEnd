@@ -12,6 +12,7 @@ import { jwtDecode } from "jwt-decode"; // Import jwt-decode library
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useAxiosPrivate from "hooks/useAxiosPrivate";
+import { getUsers } from "services/usersService/api";
 
 const Room = () => {
   const { roomId } = useParams();
@@ -131,7 +132,7 @@ const Room = () => {
     // Fetch all inscriptions from your backend API
     const fetchInscriptions = async () => {
       try {
-        const response = await axiosPrivate.get("/inscription/all");
+        const response = await getUsers("student", axiosPrivate);
         setStudentsList(response.data.data);
       } catch (error) {
         console.error("Error fetching inscriptions:", error.message);
