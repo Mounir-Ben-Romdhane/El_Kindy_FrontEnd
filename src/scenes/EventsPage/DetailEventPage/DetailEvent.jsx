@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import Footer from "components/Footer";
+import Footer from "components/FooterClient";
 import Navbar from "components/NavBar";
 import { ToastContainer, toast } from "react-toastify";
 import Card from "@mui/material/Card";

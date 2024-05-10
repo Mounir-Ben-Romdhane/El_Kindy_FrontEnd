@@ -704,12 +704,7 @@ function App() {
         />
          <Route
           path="/ListShop"
-          element={
-            <PrivateRoute
-              element={<ListShop />}
-              requiredRoles={["superAdmin", "student", "teacher","admin"]}
-            />
-          }
+          element={<ListShop />}
         />
          
 <Route
