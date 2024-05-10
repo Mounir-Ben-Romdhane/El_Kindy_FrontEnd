@@ -16,7 +16,7 @@ function ListCourses() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [felteredCoursess, setFelteredCoursess] = useState([]);
   const [filterApplied, setFilterApplied] = useState(false);
-  const [itemsPerPage] = useState(3);
+  const [itemsPerPage] = useState(6);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllCategories, setShowAllCategories] = useState(false); // State variable for toggling categories
