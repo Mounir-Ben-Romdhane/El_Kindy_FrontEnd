@@ -85,35 +85,29 @@ function Index() {
                   <div className="card bg-transparent border-2 rounded-3">
                     {/* Counter boxes START */}
                     <div className="m-3">
-                      {/* Counter item */}
-                      <div className="col-sm-6 col-lg-4">
-                        <div className="d-flex justify-content-center align-items-center p-4 bg-warning bg-opacity-15 rounded-3">
-                          <FontAwesomeIcon
-                            icon={faBook}
-                            className="display-6 text-warning mb-0"
-                          />
-                          <div className="ms-4">
-                            <div className="d-flex">
-                              <h5
-                                className="purecounter mb-0 fw-bold"
-                                data-purecounter-start={0}
-                                data-purecounter-end={
-                                  mostEnrolledCourse.courseTitle
-                                }
-                                data-purecounter-delay={200}
-                              >
-                                {mostEnrolledCourse.courseTitle}
-                              </h5>
-                            </div>
-                            <div className="d-flex mt-2">
-                              <span className="mb-0 h6 fw-light">
-                                Most Enrolled Course
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Other Counter items */}
+                    <div className="card bg-transparent border-2 rounded-3">
+                    {/* Counter boxes START */}
+                    <div className="m-3">
+                    <div
+                   style={{
+                     display: "flex",
+                     flexDirection: "column", // Adjust to column for vertical stacking
+                   }}
+                 >
+                   <img
+                   className='rounded-3'
+                     src="/assets/images/welcomee.png"
+                     alt="No inscriptions availableee"
+                     style={{
+                       maxWidth: "100%", // Limit the width to 50% of its container
+                       maxHeight: "100%", // Limit the height to 100% of the container
+                       objectFit: "contain", // Ensure the image's aspect ratio is maintained
+                     }}
+                   />
+                 </div>
+                    </div>
+                    {/* Counter boxes END */}
+                  </div>
                     </div>
                     {/* Counter boxes END */}
                   </div>

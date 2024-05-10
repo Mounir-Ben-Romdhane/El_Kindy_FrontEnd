@@ -89,21 +89,38 @@ function Index() {
                   <h2>Error: {error}</h2>
                 ) : (
                     <>
-                     <div className="card bg-transparent border-2 rounded-3">
-                    {/* Counter boxes START */}
-                    <div className="m-3">
-                            {loading ? <CircularProgress /> : (
-                                <ReviewPopup
-                                open={openPopup}
-                                handleClose={() => setOpenPopup(false)}
-                                teachers={teachers}
-                                selectedTeacher={selectedTeacher}
-                                setSelectedTeacher={setSelectedTeacher} // Confirm this is correctly passed
-                              />
-                            )}
-                         </div>   
-                         </div>
-                    </>
+                    <div className="card bg-transparent border-2 rounded-3">
+                   {/* Counter boxes START */}
+                   <div className="m-3">
+                           {loading ? <CircularProgress /> : (
+                               <ReviewPopup
+                               open={openPopup}
+                               handleClose={() => setOpenPopup(false)}
+                               teachers={teachers}
+                               selectedTeacher={selectedTeacher}
+                               setSelectedTeacher={setSelectedTeacher} // Confirm this is correctly passed
+                             />
+                           )}
+                              <div
+                   style={{
+                     display: "flex",
+                     flexDirection: "column", // Adjust to column for vertical stacking
+                   }}
+                 >
+                   <img
+                   className='rounded-3'
+                     src="/assets/images/welcomee.png"
+                     alt="No inscriptions availableee"
+                     style={{
+                       maxWidth: "100%", // Limit the width to 50% of its container
+                       maxHeight: "100%", // Limit the height to 100% of the container
+                       objectFit: "contain", // Ensure the image's aspect ratio is maintained
+                     }}
+                   />
+                 </div>
+                        </div>   
+                        </div>
+                   </>
                         )}
                         </div>
                         </div>
