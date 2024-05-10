@@ -33,7 +33,6 @@ import EditAllClass from "../src/scenes/AllClass/EditAllClass";
 import ListAllClass from "../src/scenes/AllClass/ListAllClass";
 import AddAllClass from "../src/scenes/AllClass/AddAllClass";
 
-import PLaymusic from "../src/scenes/PLaymusic";
 
 import UploadImageForm from "../src/scenes/Azureimage/UploadImageForm";
 import ListEventsPage from "../src/scenes/EventsPage/ListEventPage/ListEvent"
@@ -315,10 +314,6 @@ function App() {
               requiredRoles={["superAdmin", "admin", "teacher"]}
             />
           }
-        />
-        <Route
-          path="/PLaymusic"
-          element={<PLaymusic />}
         />
  <Route
           path="/category"
