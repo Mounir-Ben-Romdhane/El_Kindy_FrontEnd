@@ -1,5 +1,5 @@
 import BannerStartHome from 'components/BannerStartHome'
-import Footer from 'components/Footer'
+import Footer from 'components/FooterClient'
 import NavBar from 'components/NavBar'
 import React, { useState, useEffect } from 'react'
 import { getShop } from "services/shopService/api";
