@@ -53,7 +53,7 @@ const Room = () => {
         sharedLinks: [
           {
             name: "copy Link",
-            url: `http://localhost:3000/room/${roomId}`,
+            url: `https://el-kindy.vercel.app//room/${roomId}`,
           },
         ],
         scenario: {
@@ -61,7 +61,7 @@ const Room = () => {
         },
         showScreenSharingButton: true,
       });
-      setMeetingLink(`http://localhost:3000/room/${roomId}`);
+      setMeetingLink(`https://el-kindy.vercel.app//room/${roomId}`);
       setMeetingLoaded(true);
     }
   };
