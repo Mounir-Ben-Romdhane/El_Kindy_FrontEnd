@@ -73,7 +73,7 @@ function AddTeacher({ onClose, fetchData }) {
     const fetchStudents = async () => {
       try {
         // Make an API call to fetch students data
-        const response = await getUsers("student");
+        const response = await getUsers("student", axiosPrivate);
         // Set the fetched students data to the state
         setStudents(response.data.data);
       } catch (error) {
