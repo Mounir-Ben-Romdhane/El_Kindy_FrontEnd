@@ -20,21 +20,6 @@ const ChatBox = (props) => {
   const axiosPrivate = useAxiosPrivate();
   const socket = useRef();
 
-  const getAvatarSrc = (admin) => {
-    if ( admin.picturePath !== "" && admin.authSource === "local") {
-      // If user has a custom picture path
-      return `https://el-kindy-project-backend.onrender.com/assets/${admin.picturePath}`;
-    } else if (admin && admin.picturePath === "" && admin.gender !== "") {
-      // If user has no custom picture but has a gender
-      return admin.gender === "Male"
-        ? "/assets/images/element/02.jpg"
-        : "/assets/images/element/01.jpg";
-    } else {
-      // Default avatar if no picture path or gender is available
-      return admin.picturePath;
-    }
-  };
-
   const accessToken = useSelector((state) => state.accessToken);
   const refreshTokenState = useSelector((state) => state.refreshToken);
   const userId = accessToken ? jwtDecode(accessToken).id : "";
@@ -55,18 +40,18 @@ const ChatBox = (props) => {
     }
   };
 
-const sendMessageToServer = () => {
-  const message = {
-    receiverId: props.receiverId,
-    chatId: props.keyy, // Assurez-vous d'utiliser la prop correcte pour chatId
-    senderId: userId,
-    text: newMessage,
+  const sendMessageToServer = () => {
+    const message = {
+      receiverId: props.receiverId,
+      chatId: props.keyy, // Assurez-vous d'utiliser la prop correcte pour chatId
+      senderId: userId,
+      text: newMessage,
+    };
+
+    setSendMessage(message);
   };
 
-  setSendMessage(message);
-};
 
-  
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -110,15 +95,15 @@ const sendMessageToServer = () => {
     if (newMessage.trim() === "" && !picturePath) {
       return;
     }
-    
+
     const imagePath = picturePath ? URL.createObjectURL(picturePath) : null;
-    
+
     const formData = new FormData();
     formData.append("chatId", props.keyy);
     formData.append("senderId", props.currentUser);
     formData.append("text", newMessage);
     formData.append("picturePath", imagePath);
-    
+
     try {
       const { data } = await addMessage(formData, axiosPrivate);
       setMessages([...messages, data]);
@@ -129,10 +114,10 @@ const sendMessageToServer = () => {
       console.log(error);
     }
     sendMessageToServer();
-      // Envoyer le message au serveur
-      socket.current.emit("send-message", messages);
-      setNewMessage(""); // Réinitialiser le champ de texte après l'envoi
-    
+    // Envoyer le message au serveur
+    socket.current.emit("send-message", messages);
+    setNewMessage(""); // Réinitialiser le champ de texte après l'envoi
+
   };
 
   //console.log("props",props.keyy);
@@ -148,7 +133,7 @@ const sendMessageToServer = () => {
           setMessages(prevMessages => [...prevMessages, receivedMessage]);
         }
       });
-  
+
       return () => {
         if (socket.current) {
           socket.current.off("receive-message");
@@ -156,8 +141,8 @@ const sendMessageToServer = () => {
       };
     }
   }, [props.keyy, messages]);
-  
-  
+
+
 
   const scroll = useRef();
   const imageRef = useRef();
@@ -166,46 +151,46 @@ const sendMessageToServer = () => {
     const file = e.target.files[0];
     setPicturePath(file);
   };
- // Connect to Socket.io
- useEffect(() => {
-  socket.current = io("https://chat-elkindy.onrender.com");
-  //console.log("Connected to socket server");
-  socket.current.emit("new-user-add", userId);
+  // Connect to Socket.io
+  useEffect(() => {
+    socket.current = io("ws://localhost:8800");
+    //console.log("Connected to socket server");
+    socket.current.emit("new-user-add", userId);
 
-  socket.current.on("get-users", (users) => {
-    //console.log("Online Users:", users);
-    setOnlineUsers(users);
-  });
-}, []);
-
-
-// Send Message to socket server
-useEffect(() => {
- // console.log("Socket current state:", socket.current);
-  if (sendMessage !== null && socket.current) {
- //   console.log("Sending message:", sendMessage);
-    socket.current.emit("send-message", sendMessage);
-  }
-}, [sendMessage]);
-
-// Get the message from socket server
-useEffect(() => {
-  if (socket.current) {
-    socket.current.on("receive-message", (message) => {
- //     console.log("Message reçu:", message);
-      if (message.chatId === props.keyy) {
-        setMessages(prevMessages => [...prevMessages, message]);
-      }
+    socket.current.on("get-users", (users) => {
+      //console.log("Online Users:", users);
+      setOnlineUsers(users);
     });
+  }, []);
 
-    return () => {
-      if (socket.current) {
-        socket.current.off("receive-message");
-      }
-    };
-  }
-}, [props.keyy]);
-//console.log("Messages actuels dans l'état:", messages);
+
+  // Send Message to socket server
+  useEffect(() => {
+    // console.log("Socket current state:", socket.current);
+    if (sendMessage !== null && socket.current) {
+      //   console.log("Sending message:", sendMessage);
+      socket.current.emit("send-message", sendMessage);
+    }
+  }, [sendMessage]);
+
+  // Get the message from socket server
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.on("receive-message", (message) => {
+        //     console.log("Message reçu:", message);
+        if (message.chatId === props.keyy) {
+          setMessages(prevMessages => [...prevMessages, message]);
+        }
+      });
+
+      return () => {
+        if (socket.current) {
+          socket.current.off("receive-message");
+        }
+      };
+    }
+  }, [props.keyy]);
+  //console.log("Messages actuels dans l'état:", messages);
 
   return (
     <>
@@ -217,7 +202,7 @@ useEffect(() => {
               style={{ display: "flex", alignItems: "center" }}
             >
               <img
-                src={getAvatarSrc(userData)}
+                src={userData?.picturePath ? userData.picturePath : "/assets/images/element/02.jpg"}
                 alt="Profile"
                 className="followerImage"
                 style={{ width: "35px", height: "35px", borderRadius: "50%" }}
@@ -247,7 +232,7 @@ useEffect(() => {
                 <div className="chat-body my-5">
                   {messages && messages.length > 0 ? (
                     messages.map((message) => (
-                      
+
                       <div
                         key={message._id}
                         className={`message ${message.senderId === props.currentUser
@@ -256,13 +241,13 @@ useEffect(() => {
                           }`}
                       >
                         <span>{message.text}</span>
-                      {message.picturePath && !message.text && (
-  <div className="image-container">
-    {/* Assurez-vous que message.picturePath contient l'URL complète accessible */}
-    <img src={message.picturePath} alt="Uploaded" style={{ width: "200px", height: "100px" }} />
-    <span className="message-time">{format(message.createdAt)}</span>
-  </div>
-)}
+                        {message.picturePath && !message.text && (
+                          <div className="image-container">
+                            {/* Assurez-vous que message.picturePath contient l'URL complète accessible */}
+                            <img src={message.picturePath} alt="Uploaded" style={{ width: "200px", height: "100px" }} />
+                            <span className="message-time">{format(message.createdAt)}</span>
+                          </div>
+                        )}
                         {!message.picturePath && (
                           <span className="message-time">{format(message.createdAt)}</span>
                         )}
