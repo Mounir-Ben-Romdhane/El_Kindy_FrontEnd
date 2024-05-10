@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Button, Typography, Paper, Box, styled, Snackbar, TextField } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import MuiAlert from '@mui/material/Alert';
+import axios from 'api/axios';
 
 const Input = styled('input')({
   display: 'none',

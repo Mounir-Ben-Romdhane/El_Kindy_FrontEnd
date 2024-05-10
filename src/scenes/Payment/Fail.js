@@ -1,7 +1,7 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import fail from '../../assetss/images/icons8-fail-188.png';
+import axios from 'api/axios';
 
 function Fail() {
   const [searchParams] = useSearchParams();

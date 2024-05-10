@@ -1,6 +1,6 @@
+import axios from "api/axios";
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
 
 function Payment() {
   const [form,setForm] = useState({})

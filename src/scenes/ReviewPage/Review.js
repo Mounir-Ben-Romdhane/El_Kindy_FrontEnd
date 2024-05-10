@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
     Table,
     TableBody,
@@ -11,6 +10,7 @@ import {
     Typography,
     Paper,
   } from '@mui/material';
+import axios from 'api/axios';
 
   const Professors = () => {
     const [professors, setProfessors] = useState([]);

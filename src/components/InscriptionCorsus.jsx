@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { loadScripts } from "../scriptLoader";
 import { Link, useNavigate } from "react-router-dom";
 //toast
@@ -11,6 +10,7 @@ import BannerStartHome from "./BannerStartHome";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faCheck } from "@fortawesome/free-solid-svg-icons";
 import "../App.css";
+import axios from "api/axios";
 
 function InscriptionCorsus(props) {
   const [coursesByCategories, setCoursesByCategories] = useState([]);
@@ -134,7 +134,7 @@ function InscriptionCorsus(props) {
   const fetchCoursesByCategories = async () => {
     try {
       const response = await axios.get(
-        "https://el-kindy-project-backend.onrender.com/course/getAllByCategories"
+        "/course/getAllByCategories"
       );
       //console.log("response : ", response.data);
       setCoursesByCategories(response.data.data);

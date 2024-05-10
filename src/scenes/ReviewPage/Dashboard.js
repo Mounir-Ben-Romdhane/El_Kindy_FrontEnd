@@ -19,10 +19,10 @@ import {
   Badge 
 } from '@mui/material';
 import { Menu as MenuIcon, Star as StarIcon, Home, Info } from '@mui/icons-material';
-import axios from 'axios';
 
 import Professors from './Review';
 import InstructorPieChart from './InstructerChart';
+import axios from 'api/axios';
 
 const NavigationDrawer = ({ open, onClose }) => (
   <Drawer anchor="left" open={open} onClose={onClose}>

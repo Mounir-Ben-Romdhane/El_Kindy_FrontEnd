@@ -1,8 +1,8 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams,Link } from 'react-router-dom';
 import success from '../../assetss/images/icons8-success.svg'
 import fail from '../../assetss/images/icons8-fail-188.png'
+import axios from 'api/axios';
 
 function SuccessStage() {
   const [searchParams] = useSearchParams();

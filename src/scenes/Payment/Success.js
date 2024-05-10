@@ -1,7 +1,7 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams,Link } from 'react-router-dom';
 import success from '../../assetss/images/icons8-success.svg'
+import axios from 'api/axios';
 //import fail from '../../assetss/images/icons8-fail-188.png'
 
 function Success() {

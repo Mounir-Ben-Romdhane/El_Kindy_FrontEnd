@@ -20,6 +20,21 @@ const ChatBox = (props) => {
   const axiosPrivate = useAxiosPrivate();
   const socket = useRef();
 
+  const getAvatarSrc = (admin) => {
+    if ( admin.picturePath !== "" && admin.authSource === "local") {
+      // If user has a custom picture path
+      return `https://el-kindy-project-backend.onrender.com/assets/${admin.picturePath}`;
+    } else if (admin && admin.picturePath === "" && admin.gender !== "") {
+      // If user has no custom picture but has a gender
+      return admin.gender === "Male"
+        ? "/assets/images/element/02.jpg"
+        : "/assets/images/element/01.jpg";
+    } else {
+      // Default avatar if no picture path or gender is available
+      return admin.picturePath;
+    }
+  };
+
   const accessToken = useSelector((state) => state.accessToken);
   const refreshTokenState = useSelector((state) => state.refreshToken);
   const userId = accessToken ? jwtDecode(accessToken).id : "";
@@ -202,7 +217,7 @@ useEffect(() => {
               style={{ display: "flex", alignItems: "center" }}
             >
               <img
-                src={userData?.picturePath || "defaultProfile.png"}
+                src={getAvatarSrc(userData)}
                 alt="Profile"
                 className="followerImage"
                 style={{ width: "35px", height: "35px", borderRadius: "50%" }}

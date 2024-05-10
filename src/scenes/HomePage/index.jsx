@@ -30,7 +30,7 @@ function Index() {
   ];
   const fetchData = async () => {
     try {
-      const response = await getUsers("teacher");
+      const response = await getUsers("teacher", axiosPrivate);
       setTeachers(response.data.data);
     } catch (error) {
       console.error("Error fetching teachers:", error);
@@ -41,9 +41,10 @@ function Index() {
   }, []);
 
 
+
   const fetchDataa = async () => {
     try {
-      const response = await getUsers("student");
+      const response = await getUsers("student", axiosPrivate);
       setStudents(response.data.data);
     } catch (error) {
       console.error("Error fetching students:", error);
